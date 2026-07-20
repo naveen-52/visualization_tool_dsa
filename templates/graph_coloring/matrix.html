@@ -19,16 +19,19 @@
         font-size: 28px;
         font-weight: 700;
         margin-bottom: 6px;
+        color: var(--text-primary);
     }
     .page-subtitle {
-        color: #6b7280;
+        color: var(--text-secondary);
         font-size: 14px;
     }
     .card {
-        background: #ffffff;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
         border-radius: 14px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--shadow-md);
         padding: 24px;
+        color: var(--text-primary);
     }
     .card-header {
         margin-bottom: 16px;
@@ -36,13 +39,15 @@
     .card-title {
         font-size: 18px;
         font-weight: 600;
+        color: var(--text-primary);
     }
     .alert {
         display: flex;
         align-items: center;
         gap: 10px;
-        background: #eef2ff;
-        color: #3730a3;
+        background: rgba(99, 102, 241, 0.12);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
         border-radius: 10px;
         padding: 12px 14px;
         font-size: 14px;
@@ -52,7 +57,7 @@
     .matrix-container {
         overflow: auto;
         border-radius: 12px;
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--border-color);
         max-height: 60vh;
         margin-bottom: 24px;
     }
@@ -69,7 +74,7 @@
         width: 60px;
         height: 52px;
         border-radius: 12px;
-        border: 1.5px solid #e0e4eb;
+        border: 1.5px solid var(--border-color);
         display: grid;
         place-items: center;
         cursor: pointer;
@@ -77,8 +82,8 @@
         font-weight: 600;
         line-height: 1;
         user-select: none;
-        background: linear-gradient(180deg, #ffffff, #f8fafc);
-        color: #374151;
+        background: var(--input-bg);
+        color: var(--text-primary);
         transition:
             background 0.18s ease,
             border-color 0.18s ease,
@@ -102,9 +107,9 @@
 
     /* DIAGONAL CELLS */
     .matrix-cell.diagonal {
-        background: linear-gradient(180deg, #f1f5f9, #e5e7eb);
+        background: var(--content-bg);
         border-style: dashed;
-        color: #6b7280;
+        color: var(--text-secondary);
         cursor: default;
     }
     .matrix-cell.diagonal:hover {
@@ -125,8 +130,8 @@
         font-size: 16px;
         font-weight: 600;
         outline: none;
-        background: #ffffff;
-        color: #374151;
+        background: var(--input-bg);
+        color: var(--text-primary);
         padding: 0;
     }
 

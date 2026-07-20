@@ -128,11 +128,18 @@ function generateSelectors(){
         "#6366f1","#84cc16","#f43f5e","#0ea5e9",
         "#9333ea","#10b981","#f59e0b","#64748b"
     ];
+    
+    const colorNames = [
+        "Red", "Green", "Blue", "Yellow",
+        "Purple", "Orange", "Teal", "Pink",
+        "Indigo", "Lime", "Rose", "Sky Blue",
+        "Deep Purple", "Emerald", "Amber", "Slate Grey"
+    ];
 
     for(let i=0;i<numVertices;i++){
 
         let html = `
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom: 16px;">
         <label class="form-label">Vertex ${i+1}</label>
 
         <select name="color_${i}" 
@@ -141,9 +148,12 @@ function generateSelectors(){
         `;
 
         for(let c=1;c<=k;c++){
+            const colorIdx = c % colorList.length;
+            const hex = colorList[colorIdx];
+            const name = colorNames[colorIdx];
             html += `
-            <option value="${c}" style="background:${colorList[c % colorList.length]}; color:#fff;">
-                Color ${c}
+            <option value="${c}" style="background:${hex}; color:#fff;">
+                ${name}
             </option>`;
         }
 

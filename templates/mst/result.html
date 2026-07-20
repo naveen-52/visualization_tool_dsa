@@ -19,19 +19,22 @@
 .page-title {
     font-size: 30px;
     font-weight: 800;
+    color: var(--text-primary);
 }
 .page-subtitle {
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 14px;
 }
 
 /* CARD */
 .card-modern {
-    background: #ffffff;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: 18px;
-    box-shadow: 0 14px 40px rgba(0,0,0,0.08);
+    box-shadow: var(--shadow-md);
     padding: 32px;
     margin-bottom: 28px;
+    color: var(--text-primary);
 }
 
 /* RESULT BOX */
@@ -41,18 +44,19 @@
     align-items: center;
     padding: 22px 26px;
     border-radius: 14px;
-    background: linear-gradient(135deg,#eef2ff,#f5f3ff);
+    background: var(--result-bg);
+    border: 1px solid var(--result-border);
     margin-bottom: 22px;
 }
 .result-highlight span {
     font-size: 14px;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-secondary);
 }
 .result-highlight strong {
     font-size: 34px;
     font-weight: 800;
-    color: #4f46e5;
+    color: var(--primary-color);
 }
 
 /* ALERT */
@@ -60,8 +64,9 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #ecfdf5;
-    color: #065f46;
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 14px 16px;
     font-size: 14px;
@@ -76,8 +81,8 @@
     max-width: 100%;
     max-height: 480px;
     border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
 }
 
 /* 🔥 FLOW ANIMATION */
@@ -118,27 +123,29 @@
 .table-container {
     overflow-x: auto;
     border-radius: 14px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color);
 }
 .data-table {
     width: 100%;
     border-collapse: collapse;
 }
 .data-table th {
-    background: #f9fafb;
+    background: var(--content-bg);
     text-align: left;
     padding: 12px 16px;
     font-size: 13px;
     font-weight: 700;
-    color: #374151;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
 }
 .data-table td {
     padding: 12px 16px;
     font-size: 14px;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-primary);
 }
 .data-table tr:hover {
-    background: #f3f4f6;
+    background: rgba(37, 99, 235, 0.04);
 }
 
 /* ACTIONS */
@@ -163,9 +170,9 @@
     color: #ffffff;
 }
 .btn-secondary {
-    background: #f3f4f6;
-    color: #374151;
-    border: 1px solid #e5e7eb;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
 }
 </style>
 
@@ -205,9 +212,9 @@
 
     <h3 style="text-align:center;">MST Animation</h3>
 
-    <div style="display:flex; justify-content:center; margin-top:20px;">
-    <div style="position:relative; display:inline-block;">
-        <img id="animation-frame" width="500">
+    <div style="display:flex; justify-content:center; margin-top:20px; max-width:100%;">
+    <div style="position:relative; display:inline-block; max-width:100%;">
+        <img id="animation-frame" width="500" style="max-width: 100%; height: auto; display: block;">
         <div id="flow-overlay"></div>
     </div>
 </div>
@@ -223,29 +230,56 @@
 <!-- EDGE TABLE CARD -->
 <div class="card-modern">
 
-    <h3 style="margin-bottom:20px;">
-        MST Edge List ({{ mst_edges|length }} edges)
+    <h3 style="margin-bottom: 6px; font-size: 20px; font-weight: 700;">
+        Optimal Minimum-Cost Connections
     </h3>
+    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; line-height: 1.6;">
+        The selected edges represent the minimum-cost connections required to construct an optimal spanning tree while avoiding cycle formation.
+    </p>
 
-    <div class="table-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>From</th>
-                    <th>To</th>
-                    <th>Weight</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for edge in mst_edges %}
-                <tr>
-                    <td>{{ chr(65 + edge[0]) }}</td>
-                    <td>{{ chr(65 + edge[1]) }}</td>
-                    <td>{{ edge[2] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- TABLE AND SUMMARY SIDE-BY-SIDE CONTAINER -->
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+        <!-- COMPACT MST TABLE (LEFT) -->
+        <div class="table-container" style="flex: 1 1 320px; max-width: 480px; margin: 0;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Weight</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for edge in mst_edges %}
+                    <tr>
+                        <td>{{ chr(65 + edge[0]) }}</td>
+                        <td>{{ chr(65 + edge[1]) }}</td>
+                        <td>{{ edge[2] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- RESULT SUMMARY GRID (RIGHT) -->
+        <div style="flex: 1 1 300px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;">
+            <div style="background: var(--content-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px;">
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Total MST Weight</span>
+                <strong style="font-size: 18px; font-weight: 700; color: var(--primary-color);">{{ total_weight }}</strong>
+            </div>
+            <div style="background: var(--content-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px;">
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Algorithm Used</span>
+                <strong style="font-size: 16px; font-weight: 700; color: var(--text-primary);">{{ algorithm|capitalize }}'s Algorithm</strong>
+            </div>
+            <div style="background: var(--content-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px;">
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Selected Edges</span>
+                <strong style="font-size: 18px; font-weight: 700; color: var(--text-primary);">{{ mst_edges|length }}</strong>
+            </div>
+            <div style="background: var(--content-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px;">
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Cycle Formation</span>
+                <strong style="font-size: 15px; font-weight: 700; color: #10b981;">No Cycles Detected</strong>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -259,7 +293,7 @@
             Try Another Graph
         </a>
 
-        <a href="/" class="btn btn-secondary">
+        <a href="/dashboard" class="btn btn-secondary">
             <i class="fas fa-home"></i>
             Back to Dashboard
         </a>

@@ -1,0 +1,230 @@
+{% extends "layout.html" %}
+
+{% block title %}About NEC AlgoViz Team{% endblock %}
+
+{% block content %}
+<!-- ABOUT HERO -->
+<section class="about-hero" aria-label="About NEC AlgoViz Team Hero">
+    <div class="about-hero__bg" aria-hidden="true">
+        <div class="noise"></div>
+        <div class="glow glow-a"
+            style="position: absolute; top: -10%; left: 30%; width: 400px; height: 400px; background: rgba(37, 99, 235, 0.15); filter: blur(100px); border-radius: 50%;">
+        </div>
+        <div class="glow glow-b"
+            style="position: absolute; bottom: 0; right: 20%; width: 300px; height: 300px; background: rgba(6, 182, 212, 0.1); filter: blur(80px); border-radius: 50%;">
+        </div>
+    </div>
+    <div style="position: relative; z-index: 1;">
+        <span class="hero-badge">
+            <i class="fas fa-users"></i> Meet The Creators
+        </span>
+        <h1 class="about-hero__title">About NEC AlgoViz Team</h1>
+        <p class="about-hero__desc">Democratizing computer science through premium, interactive, real-time algorithm
+            visualization.</p>
+    </div>
+</section>
+
+<!-- ABOUT & MISSION -->
+<section class="about-grid" aria-label="About and Mission">
+    <div class="about-card">
+        <div class="about-card__icon"><i class="fas fa-cubes"></i></div>
+        <h2 class="about-card__title">About NEC AlgoViz</h2>
+        <p class="about-card__desc">
+            NEC AlgoViz is an interactive algorithm visualization platform designed to make complex Data Structures and Algorithms accessible and intuitive. Through real-time step-by-step execution, dynamic graph state updates, and guided visual feedback, the platform transforms abstract theoretical logic into engaging learning experiences built specifically for students, developers, and problem solvers.
+        </p>
+    </div>
+    <div class="about-card">
+        <div class="about-card__icon"><i class="fas fa-crosshairs"></i></div>
+        <h2 class="about-card__title">Our Mission</h2>
+        <p class="about-card__desc">
+            Our mission is to make computer science education more interactive, meaningful, and accessible by bridging the gap between theoretical algorithm concepts and practical visual understanding. We empower learners to experiment with parameters, observe state changes in real time, and build lasting confidence in problem-solving and algorithmic thinking.
+        </p>
+    </div>
+</section>
+
+<!-- PROJECT JOURNEY -->
+<section class="roadmap-section" aria-label="Project Journey">
+    <div class="team-head" style="text-align: left; margin-bottom: 24px;">
+        <h2>Project Journey</h2>
+        <p>The evolution of NEC AlgoViz from a foundational concept into a modern interactive learning platform.</p>
+    </div>
+    <div class="roadmap-timeline">
+        <div class="roadmap-item completed">
+            <div class="roadmap-date">Project Initiation</div>
+            <h3 class="roadmap-title">I. Jude Iyadurai</h3>
+            <p class="roadmap-desc">Conceptualized with the vision of making abstract Data Structures and Algorithms intuitive, establishing the core architectural framework and laying the groundwork for interactive visual learning.</p>
+        </div>
+        <div class="roadmap-item completed">
+            <div class="roadmap-date">Complete Redesign & Development</div>
+            <h3 class="roadmap-title">M. Vijay Arvind & T. Naveen Kumar</h3>
+            <p class="roadmap-desc">Collaboratively engineered a complete platform redesign, enhancing the UI/UX with modern glassmorphism, integrating dynamic workspaces, optimizing performance, and delivering a student-friendly educational platform.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ACKNOWLEDGEMENT -->
+<section class="team-section" aria-label="Acknowledgement" style="margin-bottom: 48px;">
+    <div class="about-card"
+        style="max-width: 800px; margin: 0 auto; border-color: rgba(96, 165, 250, 0.2); background: rgba(37, 99, 235, 0.03);">
+        <div class="about-card__icon" style="background: rgba(37, 99, 235, 0.1); color: #60a5fa;"><i
+                class="fas fa-award"></i></div>
+        <h3 class="about-card__title">Acknowledgement</h3>
+        <p class="about-card__desc" style="font-size: 15px; line-height: 1.8;">
+            NEC AlgoViz is born from a shared dedication to transforming computer science education. Initiated by <strong>I. Jude Iyadurai</strong> and comprehensively redesigned and built by <strong>M. Vijay Arvind</strong> and <strong>T. Naveen Kumar</strong>, the platform bridges abstract theory and visual understanding to make algorithm learning intuitive, interactive, and engaging for learners worldwide.
+        </p>
+    </div>
+</section>
+
+<!-- MEET THE TEAM -->
+<section class="team-section" aria-label="Meet the NEC AlgoViz Team">
+    <div class="team-head">
+        <h2>Meet the NEC AlgoViz Team</h2>
+        <p>The passionate innovators and developers shaping the future of interactive algorithm visual education.</p>
+    </div>
+    <div class="team-grid">
+        <!-- Card 1 -->
+        <div class="team-card">
+            <div class="team-avatar">JI</div>
+            <h3 class="team-name">I. Jude Iyadurai</h3>
+            <div class="team-role">Project Initiator</div>
+            <p class="team-bio">Pioneered the initial vision and architectural framework of NEC AlgoViz, laying the foundation for intuitive visual exploration in computer science education.</p>
+        </div>
+        <!-- Card 2 -->
+        <div class="team-card">
+            <div class="team-avatar">VA</div>
+            <h3 class="team-name">M. Vijay Arvind</h3>
+            <div class="team-role">Co-Developer</div>
+            <p class="team-bio">Spearheaded the modern UI/UX redesign and workspace engineering, elevating the platform into an interactive, highly responsive, and premium educational experience.</p>
+        </div>
+        <!-- Card 3 -->
+        <div class="team-card">
+            <div class="team-avatar">NK</div>
+            <h3 class="team-name">T. Naveen Kumar</h3>
+            <div class="team-role">Co-Developer</div>
+            <p class="team-bio">Driven by a focus on performance and reliability, optimizing execution logic and interactive workflows to deliver a seamless, student-friendly learning environment.</p>
+        </div>
+    </div>
+</section>
+
+<!-- TECHNOLOGIES USED -->
+<section class="tech-section" aria-label="Technologies Used">
+    <div class="team-head">
+        <h2>Technologies Used</h2>
+        <p>Our visual tool is built upon a reliable, high-performance software stack.</p>
+    </div>
+    <div class="tech-grid">
+        <div class="tech-badge"><i class="fab fa-python" style="color: #3776ab;"></i> Python 3.10</div>
+        <div class="tech-badge"><i class="fas fa-fire" style="color: #e34c26;"></i> Flask Framework</div>
+        <div class="tech-badge"><i class="fab fa-js" style="color: #f7df1e;"></i> Modern JavaScript</div>
+        <div class="tech-badge"><i class="fab fa-css3-alt" style="color: #264de4;"></i> HTML5 & CSS3</div>
+        <div class="tech-badge"><i class="fas fa-project-diagram" style="color: #60a5fa;"></i> NetworkX Graph Lib</div>
+        <div class="tech-badge"><i class="fas fa-chart-line" style="color: #10b981;"></i> Matplotlib Renderer</div>
+    </div>
+</section>
+
+<!-- FUTURE SCOPE -->
+<section class="roadmap-section" aria-label="Future Scope">
+    <div class="team-head" style="text-align: left; margin-bottom: 24px;">
+        <h2>Future Scope</h2>
+        <p>Upcoming features and strategic objectives to scale NEC AlgoViz's capabilities.</p>
+    </div>
+    <div class="roadmap-timeline">
+        <div class="roadmap-item">
+            <div class="roadmap-date">Phase 1 — Graph Algorithms</div>
+            <h3 class="roadmap-title">Kruskal's & Dijkstra's Algorithms</h3>
+            <p class="roadmap-desc">Adding step-by-step visualizations for Kruskal's minimum spanning tree construction and Dijkstra's single-source shortest path traversal with dynamic distance matrix overlays.</p>
+        </div>
+        <div class="roadmap-item">
+            <div class="roadmap-date">Phase 2 — Search & Traversal</div>
+            <h3 class="roadmap-title">BFS & DFS Visualizations</h3>
+            <p class="roadmap-desc">Implementing visual exploration stacks and queues for Breadth-First Search (BFS) and Depth-First Search (DFS) node exploration.</p>
+        </div>
+        <div class="roadmap-item">
+            <div class="roadmap-date">Phase 3 — Tree Data Structures</div>
+            <h3 class="roadmap-title">Binary Search Tree & AVL Tree</h3>
+            <p class="roadmap-desc">Expanding interactive tree canvas to support self-balancing AVL rotations, height factors, and BST insert/delete operations.</p>
+        </div>
+        <div class="roadmap-item">
+            <div class="roadmap-date">Phase 4 — Advanced Platform Features</div>
+            <h3 class="roadmap-title">Sorting, Analytics, Accounts & Export</h3>
+            <p class="roadmap-desc">Developing a Sorting Visualizer comparison grid, Algorithm Performance Comparison metrics, User Accounts for saving matrices, and Export Visualization image/code generators.</p>
+        </div>
+    </div>
+</section>
+
+<!-- CONTACT INFORMATION -->
+<section class="contact-section" aria-label="Contact Information">
+    <div class="team-head">
+        <h2>Contact Information</h2>
+        <p>Have questions or feedback about NEC AlgoViz? Drop us a line below.</p>
+    </div>
+    <div class="contact-card">
+        <form id="aboutContactForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="contactName" class="form-label">Full Name</label>
+                    <input type="text" id="contactName" class="form-input" placeholder="e.g. John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="contactEmail" class="form-label">Email Address</label>
+                    <input type="email" id="contactEmail" class="form-input" placeholder="e.g. john@example.com"
+                        required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="contactSubject" class="form-label">Subject</label>
+                <input type="text" id="contactSubject" class="form-input" placeholder="e.g. Academic Partnerships"
+                    required>
+            </div>
+            <div class="form-group">
+                <label for="contactMessage" class="form-label">Message</label>
+                <textarea id="contactMessage" class="form-input" rows="5" placeholder="Write your message here..."
+                    style="resize: vertical; min-height: 120px;" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"
+                style="width: 100%; height: 46px; font-weight: 600; cursor: pointer;">Send Message</button>
+        </form>
+    </div>
+</section>
+
+<!-- PROFESSIONAL FOOTER -->
+<footer class="about-footer">
+    <div class="footer-content">
+        <div class="footer-logo">
+            <i class="fas fa-project-diagram"></i>
+            <span>NEC AlgoViz</span>
+        </div>
+        <div class="footer-subtitle">
+            Interactive Algorithm Visualization Platform
+        </div>
+        <div class="footer-copy">
+            &copy; 2026 NEC AlgoViz. All rights reserved.
+        </div>
+    </div>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Contact Form Handler
+        const contactForm = document.getElementById('aboutContactForm');
+        if (contactForm) {
+            contactForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('contactName').value.trim();
+                const email = document.getElementById('contactEmail').value.trim();
+                const subject = document.getElementById('contactSubject').value.trim();
+                const message = document.getElementById('contactMessage').value.trim();
+
+                if (name && email && subject && message) {
+                    if (typeof showToast === 'function') {
+                        showToast('Message sent successfully! We will get back to you soon.', 'success');
+                    } else {
+                        alert('Message sent successfully!');
+                    }
+                    contactForm.reset();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

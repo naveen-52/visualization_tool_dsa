@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, request, jsonify, session
-from app.algorithms.huffman import build_huffman
+from flask import Blueprint, render_template, request, jsonify
+from app.services.huffman_service import process_encode, process_decode
 
 huffman_bp = Blueprint("huffman", __name__)
 
@@ -31,30 +31,16 @@ def huffman_encode():
         text = data.get("text", "")
         if not text:
             return jsonify({"error": "Text cannot be empty"}), 400
+            
+        include_steps = data.get("include_steps", True)
 
-        # Delegate purely to algorithm logic
-        result = build_huffman(text)
-        
-        codes = result.get("codes", {})
-        tree = result.get("tree", {})
-        steps = result.get("steps", [])
+        # Delegate execution to service layer
+        result = process_encode(text, include_steps=include_steps)
 
-        # Session storage
-        session["text"] = text
-        session["codes"] = codes
-        session["tree"] = tree
-        session["steps"] = steps
+        return jsonify(result), 200
 
-        # Generate the encoded string manually via the codes dict
-        encoded_text = "".join(codes[char] for char in text)
-
-        return jsonify({
-            "encoded": encoded_text,
-            "codes": codes,
-            "tree": tree,
-            "steps": steps
-        }), 200
-
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -65,34 +51,21 @@ def huffman_encode():
 def huffman_decode():
     try:
         data = request.get_json()
-        if not data or "encoded" not in data:
-            return jsonify({"error": "No encoded text provided"}), 400
+        if not data or "encoded" not in data or "codes" not in data:
+            return jsonify({"error": "Both 'encoded' text and 'codes' map are required"}), 400
 
         encoded_text = data.get("encoded", "")
-
-        # Retrieve mapped data from session
-        codes = session.get("codes")
+        codes = data.get("codes", {})
 
         if not codes:
-            return jsonify({"error": "No codes found in session. Please encode first."}), 400
+            return jsonify({"error": "Codes mapping is missing or empty"}), 400
 
-        # Invert the mapping: binary -> character
-        reverse_codes = {v: k for k, v in codes.items()}
+        result = process_decode(encoded_text, codes)
 
-        decoded_text = ""
-        current_bits = ""
+        return jsonify(result), 200
 
-        # Reconstruct exactly the original string
-        for bit in encoded_text:
-            current_bits += bit
-            if current_bits in reverse_codes:
-                decoded_text += reverse_codes[current_bits]
-                current_bits = ""
-
-        return jsonify({
-            "decoded": decoded_text
-        }), 200
-
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
     except Exception as e:
         import traceback
         traceback.print_exc()

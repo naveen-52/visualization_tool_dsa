@@ -9,85 +9,234 @@
 {% block content %}
 
 <!-- ═══════════════════════════════════════════════ -->
-<!--  HERO SECTION — Compact, no action buttons    -->
+<!--  HERO SECTION — Premium SaaS-style intro       -->
 <!-- ═══════════════════════════════════════════════ -->
-<section class="hero-section hero-compact">
-    <div class="hero-badge">Interactive Visualization Tool</div>
-    <h1 class="hero-title">Algorithm Visualization Platform</h1>
-    <p class="hero-description">
-        Explore graph coloring, minimum spanning trees, and Huffman coding through
-        step-by-step, interactive animations. Choose an algorithm below to begin.
-    </p>
+<section class="home-hero" aria-label="NEC AlgoViz hero">
+    <div class="home-hero__bg" aria-hidden="true">
+        <div class="noise"></div>
+        <div class="glow glow-a"></div>
+        <div class="glow glow-b"></div>
+        <div class="glow glow-c"></div>
+    </div>
+
+    <div class="home-hero__left">
+        <span class="hero-badge">
+            <i class="fas fa-sparkles"></i>
+            Interactive Algorithm Visualization Platform
+        </span>
+
+        <h1 class="home-hero__title">
+            Visualize Data Structures<br>& Algorithms
+        </h1>
+
+        <p class="home-hero__desc">
+            Learn how algorithms work through real-time execution, interactive visualizations, and intuitive explanations built for students, developers, and problem solvers.
+        </p>
+
+        <div class="home-hero__ctas">
+            <a href="/graph-coloring" class="btn btn-primary">
+                <i class="fas fa-play"></i> Get Started
+            </a>
+            <a href="#algo-cards" class="btn btn-secondary">
+                <i class="fas fa-layer-group"></i> Explore Algorithms
+            </a>
+        </div>
+
+        <div class="home-hero__kpis" role="list">
+            <div class="kpi-stat" role="listitem">
+                <span class="kpi-stat__val">3+</span>
+                <span class="kpi-stat__lbl">Algorithms</span>
+            </div>
+            <div class="kpi-stat" role="listitem">
+                <span class="kpi-stat__icon"><i class="fas fa-cubes"></i></span>
+                <span class="kpi-stat__lbl">Interactive Workspaces</span>
+            </div>
+            <div class="kpi-stat" role="listitem">
+                <span class="kpi-stat__val">24/7</span>
+                <span class="kpi-stat__lbl">Access</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="home-hero__right" aria-hidden="true">
+        <div class="dashboard-hero-visual">
+            <div class="dashboard-hero-visual__top">
+                <span class="dashboard-hero-pill">Graph + Tree + Code</span>
+                <span class="dashboard-hero-pill dashboard-hero-pill-soft">Interactive</span>
+            </div>
+
+            <div style="position: relative; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 8px; aspect-ratio: 16/9; background: rgba(255,255,255,0.03);">
+                <!-- Loading Spinner -->
+                <div class="video-spinner" id="video-spinner">
+                    <div class="spinner"></div>
+                </div>
+
+                <video id="demo-video" class="hero-video" loop muted playsinline preload="none" poster="{{ url_for('static', filename='Gemini_Generated_Image_ly5ov8ly5ov8ly5o.webp') }}">
+                    <source src="{{ url_for('static', filename='videos/create_an_-_secind_premium.mp4') }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+
+            <div class="dashboard-hero-visual__caption">
+                Premium visuals: graphs, spanning trees, and prefix-free coding—built into one learning studio.
+            </div>
+        </div>
+    </div>
 </section>
 
-
-<!-- ═══════════════════════════════════════════════ -->
-<!--  ALGORITHM CARDS — PRIMARY NAVIGATION          -->
-<!-- ═══════════════════════════════════════════════ -->
-<div class="section-header" id="quick-actions">
-    <h2 class="section-title">Choose an Algorithm</h2>
-    <p class="section-subtitle">Select a tool to open its interactive workspace.</p>
-</div>
-
-<div class="quick-actions-grid">
-
-    <a href="/graph-coloring" class="tool-card" id="tool-graph-coloring">
-        <div class="tool-icon-wrapper graph-coloring">
-            <i class="fas fa-palette"></i>
+<!-- STATS -->
+<section class="home-stats" aria-label="Dashboard stats">
+    <div class="stats-grid">
+        <div class="stat-card premium">
+            <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+            <div>
+                <h3>3 algorithms</h3>
+                <p>Explore Graph Coloring, MST, and Huffman Coding in one place.</p>
+            </div>
         </div>
-        <div class="tool-content">
-            <h3 class="tool-title">Graph Coloring</h3>
-            <p class="tool-description">
-                Color vertices with the Welsh-Powell algorithm and discover the chromatic number of any graph.
-            </p>
+        <div class="stat-card premium">
+            <div class="stat-icon"><i class="fas fa-bolt"></i></div>
+            <div>
+                <h3>Live visualization</h3>
+                <p>Watch each algorithm's logic update step by step.</p>
+            </div>
         </div>
-        <span class="tool-arrow"><i class="fas fa-arrow-right"></i></span>
-    </a>
-
-    <a href="/mst" class="tool-card" id="tool-mst">
-        <div class="tool-icon-wrapper mst">
-            <i class="fas fa-network-wired"></i>
+        <div class="stat-card premium">
+            <div class="stat-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+            <div>
+                <h3>Interactive steps</h3>
+                <p>Follow a guided flow built for faster understanding.</p>
+            </div>
         </div>
-        <div class="tool-content">
-            <h3 class="tool-title">Minimum Spanning Tree</h3>
-            <p class="tool-description">
-                Watch Prim's algorithm build the optimal spanning tree edge by edge in real time.
-            </p>
-        </div>
-        <span class="tool-arrow"><i class="fas fa-arrow-right"></i></span>
-    </a>
-
-    <a href="/huffman" class="tool-card" id="tool-huffman">
-        <div class="tool-icon-wrapper huffman">
-            <i class="fas fa-code"></i>
-        </div>
-        <div class="tool-content">
-            <h3 class="tool-title">Huffman Coding</h3>
-            <p class="tool-description">
-                Build prefix-free binary trees and visualize optimal data compression strategies.
-            </p>
-        </div>
-        <span class="tool-arrow"><i class="fas fa-arrow-right"></i></span>
-    </a>
-
-</div>
-
-
-<!-- ═══════════════════════════════════════════════ -->
-<!--  CONTINUE WHERE YOU LEFT OFF                   -->
-<!-- ═══════════════════════════════════════════════ -->
-<div class="recent-section" id="recent-activity">
-    <div class="section-header">
-        <h2 class="section-title"><i class="fas fa-history" style="font-size:18px; margin-right:8px; color:var(--primary-color);"></i>Continue Where You Left Off</h2>
-    </div>
-    <div class="recent-list" id="recent-list">
-        <!-- JS will populate this; fallback below -->
-        <div class="recent-empty" id="recent-empty">
-            <i class="fas fa-compass"></i>
-            <p>No recent activity yet. Pick an algorithm above to get started!</p>
+        <div class="stat-card premium">
+            <div class="stat-icon"><i class="fas fa-graduation-cap"></i></div>
+            <div>
+                <h3>Student friendly</h3>
+                <p>Clear visuals made for classroom and self-study.</p>
+            </div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- ALGORITHM CARDS -->
+<section class="algo-section" id="algo-cards" aria-label="Algorithms">
+    <div class="section-head">
+        <div class="section-kicker">
+            <span class="kicker-dot"></span> Interactive Workspaces
+        </div>
+        <h2 class="section-title">Choose an algorithm workspace</h2>
+        <p class="section-subtitle">Master complex data structures through real-time execution and step-by-step interactive visualizations.</p>
+    </div>
+
+    <div class="algo-grid">
+        <a href="/graph-coloring" class="algo-card" data-variant="graph">
+            <div class="algo-card__shine"></div>
+            <div class="algo-card__top">
+                <span class="algo-icon graph"><i class="fas fa-palette"></i></span>
+                <span class="algo-pill">Graph Coloring</span>
+            </div>
+            <h3 class="algo-card__title">Color graphs without conflicts</h3>
+            <p class="algo-card__desc">Understand how colors are systematically assigned to graph vertices while ensuring adjacent nodes never share the same color.</p>
+            <div class="algo-card__preview">
+                <img src="/image/GraphColoring.webp"
+                     alt="Graph Coloring visualization preview"
+                     class="algo-card__preview-img">
+            </div>
+            <div class="algo-card__cta">
+                <span>Open workspace</span>
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </a>
+
+        <a href="/mst" class="algo-card" data-variant="mst">
+            <div class="algo-card__shine"></div>
+            <div class="algo-card__top">
+                <span class="algo-icon mst"><i class="fas fa-network-wired"></i></span>
+                <span class="algo-pill">Minimum Spanning Tree</span>
+            </div>
+            <h3 class="algo-card__title">Build the most efficient network</h3>
+            <p class="algo-card__desc">Learn how vertices are connected across a network using the minimum total edge weight without forming cycles.</p>
+            <div class="algo-card__preview">
+                <img src="/image/MinimumSpanning.webp"
+                     alt="Minimum Spanning Tree visualization preview"
+                     class="algo-card__preview-img">
+            </div>
+            <div class="algo-card__cta">
+                <span>Open workspace</span>
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </a>
+
+        <a href="/huffman" class="algo-card" data-variant="huffman">
+            <div class="algo-card__shine"></div>
+            <div class="algo-card__top">
+                <span class="algo-icon huffman"><i class="fas fa-code"></i></span>
+                <span class="algo-pill">Huffman Coding</span>
+            </div>
+            <h3 class="algo-card__title">Compress data with optimal encoding</h3>
+            <p class="algo-card__desc">Discover how Huffman trees efficiently compress data by assigning shorter binary codes to frequently occurring symbols.</p>
+            <div class="algo-card__preview">
+                <img src="/image/Huffman.webp"
+                     alt="Huffman Coding visualization preview"
+                     class="algo-card__preview-img">
+            </div>
+            <div class="algo-card__cta">
+                <span>Open workspace</span>
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </a>
+    </div>
+</section>
+
+<!-- LOWER PANELS -->
+<section class="home-lower" aria-label="More dashboard panels">
+    <article class="panel-card panel-card-strong home-panel">
+        <div class="panel-card__header">
+            <div>
+                <p class="panel-card__eyebrow">Designed for clarity</p>
+                <h3>From concept → visualization</h3>
+            </div>
+        </div>
+        <div class="insight-list">
+            <div class="insight-item">
+                <div class="insight-icon"><i class="fas fa-layer-group"></i></div>
+                <div>
+                    <h4>Interactive Visualizations</h4>
+                    <p>Explore dynamic visual representations that make complex algorithm execution clear and intuitive.</p>
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-icon"><i class="fas fa-magic"></i></div>
+                <div>
+                    <h4>Real-time Interactions</h4>
+                    <p>Manipulate graph inputs directly to observe instant visual feedback and step-by-step state changes.</p>
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-icon"><i class="fas fa-rocket"></i></div>
+                <div>
+                    <h4>Step-by-Step Learning</h4>
+                    <p>Follow guided execution pathways designed to build deep algorithmic intuition for students and developers.</p>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <article class="panel-card home-panel">
+        <div class="panel-card__header">
+            <div>
+                <p class="panel-card__eyebrow">Continue learning</p>
+                <h3>Recently opened</h3>
+            </div>
+        </div>
+        <div class="recent-list" id="recent-list">
+            <div class="recent-empty" id="recent-empty">
+                <i class="fas fa-compass"></i>
+                <p>No recent activity yet — pick an algorithm above to get started.</p>
+            </div>
+        </div>
+    </article>
+</section>
 
 <script>
 (function() {
@@ -95,12 +244,11 @@
     const MAX_ITEMS = 3;
 
     const ALGO_META = {
-        '/graph-coloring': { name: 'Graph Coloring',        icon: 'fas fa-palette',        cls: 'graph-coloring' },
-        '/mst':            { name: 'Minimum Spanning Tree', icon: 'fas fa-network-wired',  cls: 'mst' },
-        '/huffman':        { name: 'Huffman Coding',        icon: 'fas fa-code',           cls: 'huffman' }
+        '/graph-coloring': { name: 'Graph Coloring', icon: 'fas fa-palette', cls: 'graph-coloring' },
+        '/mst': { name: 'Minimum Spanning Tree', icon: 'fas fa-network-wired', cls: 'mst' },
+        '/huffman': { name: 'Huffman Coding', icon: 'fas fa-code', cls: 'huffman' }
     };
 
-    // Record current page visit
     const path = window.location.pathname;
     if (ALGO_META[path]) {
         let recent = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
@@ -110,7 +258,6 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(recent));
     }
 
-    // Render recent list on dashboard
     if (document.getElementById('recent-list')) {
         const recent = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
         if (recent.length === 0) return;
@@ -143,4 +290,37 @@
 })();
 </script>
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('demo-video');
+    const spinner = document.getElementById('video-spinner');
+
+    if (video) {
+        // Hide spinner when video starts playing or metadata loads
+        const hideSpinner = () => {
+            if (spinner) spinner.classList.add('hidden');
+        };
+        video.addEventListener('loadeddata', hideSpinner);
+        video.addEventListener('playing', hideSpinner);
+        video.addEventListener('waiting', () => {
+            if (spinner) spinner.classList.remove('hidden');
+        });
+
+        // Autoplay when visible (using Intersection Observer)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    video.play().catch(error => {
+                        console.log('Autoplay was prevented by browser policy:', error);
+                    });
+                } else {
+                    video.pause();
+                }
+            });
+        }, { threshold: 0.15 });
+
+        observer.observe(video);
+    }
+});
+</script>
 {% endblock %}

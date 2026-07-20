@@ -9,259 +9,130 @@
 {% endblock %}
 
 {% block content %}
+<div class="page-shell">
+    <section class="page-hero">
+        <div class="page-hero-content">
+            <div class="page-eyebrow"><i class="fas fa-network-wired"></i> Network optimization</div>
+            <h1 class="page-title">Minimum Spanning Tree</h1>
+            <p class="page-subtitle">
+                Build a weighted graph and compute the optimal connection path using Prim's or Kruskal's algorithm in a refined, guided workspace.
+            </p>
+            <div class="page-actions">
+                <a href="#configure-card" class="btn btn-primary">Create MST flow</a>
+                <a href="/dashboard" class="btn btn-secondary">Back to dashboard</a>
+            </div>
+        </div>
+        <div class="page-hero-visual">
+            <div class="video-container">
+                <!-- Loading Spinner -->
+                <div class="video-spinner" id="video-spinner">
+                    <div class="spinner"></div>
+                </div>
 
-<style>
+                <!-- Fallback poster image from our static files -->
+                <video id="demo-video" class="hero-video" loop muted playsinline preload="none" poster="{{ url_for('static', filename='Gemini_Generated_Image_ly5ov8ly5ov8ly5o.webp') }}">
+                    <source src="{{ url_for('static', filename='videos/Create_a_second_cinematic_a(1).mp4') }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+    </section>
 
-/* ===== PAGE HEADER ===== */
-.page-header {
-    margin-bottom: 40px;
-    text-align: center;
-}
+    <div class="page-info-grid">
+        <div class="page-info-card">
+            <h4>Dual Algorithm Learning</h4>
+            <p>Explore both Prim's and Kruskal's algorithms to understand how vertex-expansion and edge-sorting strategies construct optimal Minimum Spanning Trees.</p>
+        </div>
+        <div class="page-info-card">
+            <h4>Minimum-Cost Connections</h4>
+            <p>Discover how edge weights guide algorithmic decisions step by step to build efficient, cycle-free spanning trees for network optimization.</p>
+        </div>
+        <div class="page-info-card">
+            <h4>Intuitive Visual Learning</h4>
+            <p>Transform complex graph optimization concepts into guided visual experiences designed to build deep algorithmic intuition for students and developers.</p>
+        </div>
+    </div>
 
-.page-title {
-    font-size: 34px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    margin-bottom: 10px;
-}
+    <section class="page-card" id="configure-card">
+        <div class="page-card-header">
+            <div class="page-card-title">Configure graph</div>
+            <div class="page-card-icon"><i class="fas fa-network-wired"></i></div>
+        </div>
 
-.page-subtitle {
-    color: #6b7280;
-    font-size: 16px;
-    max-width: 680px;
-    margin: 0 auto;
-}
+        <div class="alert alert-info" style="margin-bottom: 18px;">
+            <i class="fas fa-info-circle"></i>
+            <span>Enter the number of vertices and choose an MST algorithm.</span>
+        </div>
 
-/* ===== CARD DESIGN ===== */
-.card-modern {
-    background: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 18px 50px rgba(0,0,0,0.08);
-    padding: 40px;
-    margin-bottom: 30px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+        <form action="/mst/matrix" method="POST">
+            <div class="form-group" style="max-width: 320px; margin-bottom: 20px;">
+                <label class="form-label">Number of Vertices</label>
+                <input type="number" name="num_vertices" class="form-input" min="2" max="10" required placeholder="Enter number of vertices">
+            </div>
 
-.card-modern:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 22px 60px rgba(0,0,0,0.10);
-}
+            <div class="form-group" style="max-width: 320px; margin-bottom: 20px;">
+                <label class="form-label">Select MST Algorithm</label>
+                <select name="algorithm" class="form-input">
+                    <option value="prim">Prim's Algorithm</option>
+                    <option value="kruskal">Kruskal's Algorithm</option>
+                </select>
+            </div>
 
-/* ===== HEADER AREA ===== */
-.card-header-modern {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-}
+            <div class="action-buttons" style="justify-content: flex-start;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-arrow-right"></i>
+                    Create Matrix
+                </button>
+                <a href="/dashboard" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </form>
+    </section>
 
-.card-title-modern {
-    font-size: 20px;
-    font-weight: 700;
-}
-
-.card-icon-modern {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    display: grid;
-    place-items: center;
-    background: linear-gradient(135deg,#6366f1,#4f46e5);
-    color: white;
-    font-size: 18px;
-}
-
-/* ===== ALERT ===== */
-.alert-modern {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: #eef2ff;
-    color: #3730a3;
-    border-radius: 12px;
-    padding: 14px 16px;
-    font-size: 14px;
-    margin-bottom: 26px;
-}
-
-/* ===== FORM ===== */
-.form-group-modern {
-    margin-bottom: 30px;
-}
-
-.form-label-modern {
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    display: block;
-    color: #374151;
-}
-
-.form-input-modern {
-    width: 100%;
-    max-width: 320px;
-    padding: 12px 14px;
-    border-radius: 12px;
-    border: 1.5px solid #e5e7eb;
-    font-size: 15px;
-}
-
-.form-input-modern:focus {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
-    outline: none;
-}
-
-/* ===== BUTTONS ===== */
-.action-buttons-modern {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-}
-
-.btn-modern {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.btn-primary-modern {
-    background: linear-gradient(135deg,#6366f1,#4f46e5);
-    color: white;
-    border: none;
-}
-
-.btn-secondary-modern {
-    background: #f3f4f6;
-    color: #374151;
-    border: 1px solid #e5e7eb;
-}
-
-</style>
-
-<!-- ===== HEADER ===== -->
-<div class="page-header">
-    <h1 class="page-title">Minimum Spanning Tree</h1>
-    <p class="page-subtitle">
-        Build a weighted graph and compute the optimal connection path using Prim's or Kruskal's Algorithm.
-    </p>
+    <section class="page-card">
+        <div class="page-card-title" style="margin-bottom: 12px;">How it works</div>
+        <div class="card-description" style="color: var(--text-secondary); line-height: 1.7;">
+            <p>Constructing a Minimum Spanning Tree transforms a weighted graph into an optimal, minimum-cost connection network. NEC AlgoViz guides you through this process with real-time visualizations that highlight key edge selections at each step.</p>
+            <p style="margin-top: 10px;"><strong>Prim's Algorithm</strong> expands the network incrementally from a starting node. Learners can observe how selecting the lightest edge connecting to unexplored vertices steadily builds an optimal tree.</p>
+            <p style="margin-top: 8px;"><strong>Kruskal's Algorithm</strong> evaluates sorted edges across the entire graph. Through guided steps, you can watch the algorithm pick the lightest available edges while skipping connections that create cycles.</p>
+            <p style="margin-top: 10px;">Although Prim's expands locally and Kruskal's builds globally, both strategies yield the exact same minimum-cost tree. Comparing both approaches helps students and developers build lasting algorithmic intuition.</p>
+        </div>
+    </section>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('demo-video');
+    const spinner = document.getElementById('video-spinner');
 
-<!-- ===== CONFIGURATION CARD ===== -->
-<div class="card-modern">
+    if (video) {
+        // Hide spinner when video starts playing or metadata loads
+        const hideSpinner = () => {
+            if (spinner) spinner.classList.add('hidden');
+        };
+        video.addEventListener('loadeddata', hideSpinner);
+        video.addEventListener('playing', hideSpinner);
+        video.addEventListener('waiting', () => {
+            if (spinner) spinner.classList.remove('hidden');
+        });
 
-    <div class="card-header-modern">
-        <div class="card-title-modern">Configure Graph</div>
-        <div class="card-icon-modern">
-            <i class="fas fa-network-wired"></i>
-        </div>
-    </div>
+        // Autoplay when visible (using Intersection Observer)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    video.play().catch(error => {
+                        console.log('Autoplay was prevented by browser policy:', error);
+                    });
+                } else {
+                    video.pause();
+                }
+            });
+        }, { threshold: 0.15 });
 
-    <div class="alert-modern">
-        <i class="fas fa-info-circle"></i>
-        <span>Enter number of vertices and choose an MST algorithm.</span>
-    </div>
-
-    <form action="/mst/matrix" method="POST">
-
-        <!-- Number of vertices -->
-        <div class="form-group-modern">
-            <label class="form-label-modern">
-                Number of Vertices
-            </label>
-
-            <input type="number"
-                   name="num_vertices"
-                   class="form-input-modern"
-                   min="2"
-                   max="10"
-                   required>
-        </div>
-
-        <!-- Algorithm selection -->
-        <div class="form-group-modern">
-            <label class="form-label-modern">
-                Select MST Algorithm
-            </label>
-
-            <select name="algorithm" class="form-input-modern">
-
-                <option value="prim">
-                    Prim's Algorithm
-                </option>
-
-                <option value="kruskal">
-                    Kruskal's Algorithm
-                </option>
-
-            </select>
-        </div>
-
-        <div class="action-buttons-modern">
-
-            <button type="submit"
-                    class="btn-modern btn-primary-modern">
-
-                <i class="fas fa-arrow-right"></i>
-                Create Matrix
-
-            </button>
-
-            <a href="/"
-               class="btn-modern btn-secondary-modern">
-
-                <i class="fas fa-arrow-left"></i>
-                Back to Dashboard
-
-            </a>
-
-        </div>
-
-    </form>
-</div>
-
-
-<!-- ===== INFORMATION CARD ===== -->
-<div class="card-modern">
-
-    <div class="card-title-modern" style="margin-bottom:20px;">
-        About Minimum Spanning Tree
-    </div>
-
-    <div class="description-modern">
-
-        <p>
-            A <strong>Minimum Spanning Tree (MST)</strong> connects all vertices
-            of a weighted graph using the smallest possible total edge weight
-            without forming cycles.
-        </p>
-
-        <br>
-
-        <strong>Prim’s Algorithm:</strong>
-        <ul>
-            <li>Starts from a vertex</li>
-            <li>Adds smallest connecting edge</li>
-            <li>Expands the tree</li>
-        </ul>
-
-        <br>
-
-        <strong>Kruskal’s Algorithm:</strong>
-        <ul>
-            <li>Sorts edges by weight</li>
-            <li>Adds smallest edges first</li>
-            <li>Avoids cycles using Union-Find</li>
-        </ul>
-
-    </div>
-
-</div>
-
+        observer.observe(video);
+    }
+});
+</script>
 {% endblock %}

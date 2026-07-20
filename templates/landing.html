@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>NEC AlgoViz</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at top right, rgba(37, 99, 235, 0.35), transparent 28%),
+                linear-gradient(135deg, #020617 0%, #0f172a 55%, #111827 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            filter: blur(90px);
+            z-index: 0;
+        }
+
+        body::before {
+            width: 500px;
+            height: 500px;
+            top: -120px;
+            right: -120px;
+            background: rgba(59, 130, 246, 0.18);
+        }
+
+        body::after {
+            width: 420px;
+            height: 420px;
+            bottom: -140px;
+            left: -120px;
+            background: rgba(129, 140, 248, 0.16);
+        }
+
+        #hero-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.95;
+        }
+
+        .page-shell {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 80px;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            backdrop-filter: blur(14px);
+            background: rgba(2, 6, 23, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        .logo span {
+            color: #60a5fa;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+        }
+
+        .nav-links a {
+            color: #dbeafe;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: calc(100vh - 92px);
+            padding: 64px 24px 80px;
+            position: relative;
+        }
+
+        .badge {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 999px;
+            color: #93c5fd;
+            font-size: 14px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(15px);
+        }
+
+        .hero h1 {
+            font-size: clamp(2.8rem, 6vw, 4.8rem);
+            font-weight: 800;
+            line-height: 1.08;
+            max-width: 920px;
+            margin-bottom: 20px;
+            letter-spacing: -0.03em;
+        }
+
+        .hero h1 span {
+            color: #60a5fa;
+        }
+
+        .hero p {
+            font-size: 1.08rem;
+            color: #cbd5e1;
+            max-width: 780px;
+            line-height: 1.8;
+            margin-bottom: 34px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            box-shadow: 0 12px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+        }
+
+        .btn-secondary {
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: white;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .stats {
+            display: flex;
+            gap: 42px;
+            margin-top: 48px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .stat {
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .stat h2 {
+            font-size: 2rem;
+            color: #60a5fa;
+            margin-bottom: 6px;
+        }
+
+        .stat p {
+            font-size: 0.95rem;
+            color: #94a3b8;
+        }
+
+        .section-card {
+            max-width: 1120px;
+            margin: 0 auto 28px;
+            padding: 36px 32px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            background: rgba(15, 23, 42, 0.7);
+            box-shadow: 0 20px 40px rgba(2, 6, 23, 0.22);
+            backdrop-filter: blur(16px);
+        }
+
+        .section-card h2 {
+            font-size: 1.7rem;
+            margin-bottom: 12px;
+            color: white;
+        }
+
+        .section-card p {
+            color: #cbd5e1;
+            line-height: 1.7;
+        }
+
+        .card-grid {
+            margin-top: 24px;
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        }
+
+        .mini-card {
+            padding: 18px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mini-card i {
+            color: #60a5fa;
+            margin-bottom: 10px;
+            font-size: 1.15rem;
+        }
+
+        .mini-card h3 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .mini-card p {
+            font-size: 0.95rem;
+            color: #94a3b8;
+        }
+
+        @media (max-width: 900px) {
+            nav {
+                padding: 20px 24px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                min-height: auto;
+                padding-top: 40px;
+            }
+
+            .stats {
+                gap: 24px;
+            }
+
+            .section-card {
+                padding: 24px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="hero-canvas"></canvas>
+
+    <div class="page-shell">
+        <nav>
+            <div class="logo">NEC <span>AlgoViz</span></div>
+
+            <div class="nav-links">
+                <a href="#hero">Home</a>
+                <a href="#algorithms">Algorithms</a>
+                <a href="#features">Features</a>
+                <a href="#about">About</a>
+            </div>
+        </nav>
+
+        <section class="hero" id="hero">
+            <div class="badge">Interactive Algorithm Visualization Platform</div>
+
+            <h1>
+                Visualize <span>Data Structures</span><br>
+                & Algorithms
+            </h1>
+
+            <p>
+                Learn how algorithms work through real-time execution,
+                interactive visualizations, and intuitive explanations
+                built for students, developers, and problem solvers.
+            </p>
+
+            <div class="buttons">
+                <a href="/dashboard" class="btn btn-primary">Get Started</a>
+                <a href="#algorithms" class="btn btn-secondary">Explore Algorithms</a>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <h2>3+</h2>
+                    <p>Algorithms</p>
+                </div>
+                <div class="stat">
+                    <h2>Interactive</h2>
+                    <p>Workspaces</p>
+                </div>
+                <div class="stat">
+                    <h2>24/7</h2>
+                    <p>Access</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-card" id="algorithms">
+            <h2>Algorithms</h2>
+            <p>Master complex data structures and algorithms through interactive, real-time visualizations designed to make step-by-step execution intuitive and accessible.</p>
+            <div class="card-grid">
+                <div class="mini-card">
+                    <i class="fas fa-palette"></i>
+                    <h3>Graph Coloring</h3>
+                    <p>Understand how colors are systematically assigned to graph vertices while ensuring adjacent nodes never share the same color.</p>
+                </div>
+                <div class="mini-card">
+                    <i class="fas fa-network-wired"></i>
+                    <h3>Minimum Spanning Tree</h3>
+                    <p>Learn how vertices are connected across a network using the minimum total edge weight without forming cycles.</p>
+                </div>
+                <div class="mini-card">
+                    <i class="fas fa-code"></i>
+                    <h3>Huffman Coding</h3>
+                    <p>Discover how Huffman trees efficiently compress data by assigning shorter binary codes to frequently occurring symbols.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-card" id="features">
+            <h2>Features</h2>
+            <p>Experience interactive, intuitive, and engaging algorithm learning built for students, developers, and problem solvers.</p>
+            <div class="card-grid">
+                <div class="mini-card">
+                    <i class="fas fa-magic"></i>
+                    <h3>Interactive Visualizations</h3>
+                    <p>Explore algorithms through dynamic visual representations that turn abstract theory into clear, intuitive insights.</p>
+                </div>
+                <div class="mini-card">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Real-time Interactions</h3>
+                    <p>Manipulate graph parameters directly to observe instant visual feedback and live execution states.</p>
+                </div>
+                <div class="mini-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Step-by-Step Learning</h3>
+                    <p>Follow guided execution steps designed to build deep algorithmic intuition for students and developers.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-card" id="about">
+            <h2>About NEC AlgoViz</h2>
+            <p>NEC AlgoViz is an interactive algorithm visualization platform designed to simplify complex Data Structures and Algorithms through real-time execution and step-by-step visual learning. Built for students, developers, and problem solvers, the platform transforms abstract logic—such as Graph Coloring, Minimum Spanning Trees, and Huffman Coding—into clear, engaging, and intuitive educational experiences.</p>
+        </section>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('hero-canvas');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            let width = 0;
+            let height = 0;
+            const nodes = [];
+
+            const resize = () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+                nodes.length = 0;
+                const count = Math.min(70, Math.max(30, Math.floor(width / 24)));
+                for (let i = 0; i < count; i += 1) {
+                    nodes.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        vx: (Math.random() - 0.5) * 0.35,
+                        vy: (Math.random() - 0.5) * 0.35,
+                        r: Math.random() * 2.2 + 1.1,
+                    });
+                }
+            };
+
+            const draw = () => {
+                ctx.clearRect(0, 0, width, height);
+                ctx.strokeStyle = 'rgba(96, 165, 250, 0.12)';
+                ctx.lineWidth = 1;
+
+                nodes.forEach((node, index) => {
+                    node.x += node.vx;
+                    node.y += node.vy;
+
+                    if (node.x < 0 || node.x > width) node.vx *= -1;
+                    if (node.y < 0 || node.y > height) node.vy *= -1;
+
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                    ctx.fill();
+
+                    for (let j = index + 1; j < nodes.length; j += 1) {
+                        const other = nodes[j];
+                        const dx = node.x - other.x;
+                        const dy = node.y - other.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 130) {
+                            ctx.beginPath();
+                            ctx.moveTo(node.x, node.y);
+                            ctx.lineTo(other.x, other.y);
+                            ctx.stroke();
+                        }
+                    }
+                });
+
+                requestAnimationFrame(draw);
+            };
+
+            window.addEventListener('resize', resize);
+            resize();
+            draw();
+        }
+    </script>
+</body>
+</html>

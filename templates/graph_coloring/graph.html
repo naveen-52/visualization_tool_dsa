@@ -13,27 +13,31 @@
 {% block content %}
 <style>
 .page-header { margin-bottom: 28px; }
-.page-title { font-size: 30px; font-weight: 700; }
-.page-subtitle { color: #6b7280; font-size: 14px; max-width: 840px; }
+.page-title { font-size: 30px; font-weight: 700; color: var(--text-primary); }
+.page-subtitle { color: var(--text-secondary); font-size: 14px; max-width: 840px; }
 
 .card {
-    background: #ffffff;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: 16px;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+    box-shadow: var(--shadow-md);
     padding: 28px;
     margin-bottom: 28px;
+    color: var(--text-primary);
 }
 
 .graph-panel {
     border-radius: 14px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color);
     padding: 24px;
-    background: #f9fafb;
+    background: var(--content-bg);
+    color: var(--text-primary);
 }
 
 .view-toggle {
     display: inline-flex;
-    background: #eef2ff;
+    background: var(--content-bg);
+    border: 1px solid var(--border-color);
     padding: 4px;
     border-radius: 12px;
     gap: 4px;
@@ -47,7 +51,7 @@
     cursor: pointer;
     border: none;
     background: transparent;
-    color: #374151;
+    color: var(--text-secondary);
 }
 .toggle-btn.active {
     background: linear-gradient(135deg,#6366f1,#4f46e5);
@@ -58,9 +62,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #ffffff;
+    background: var(--card-bg);
     border-radius: 14px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color);
     padding: 28px;
     overflow: hidden;
 }
@@ -68,9 +72,17 @@
 .graph-wrapper.interactive { cursor: grab; }
 .graph-wrapper.interactive.dragging { cursor: grabbing; }
 
-svg { width: 720px; height: 720px; }
+svg {
+    width: 100%;
+    max-width: 720px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    display: block;
+    margin: 0 auto;
+}
 
-.edge { stroke: #302f2f; stroke-width: 2; }
+.edge { stroke: rgba(255, 255, 255, 0.65); stroke-width: 2; }
+body.light-mode-preview .edge { stroke: #302f2f !important; }
 
 .node { fill: #4f46e5; stroke: #3730a3; stroke-width: 3; }
 
@@ -88,7 +100,7 @@ svg { width: 720px; height: 720px; }
     gap: 20px;
     font-size: 13px;
     margin-top: 18px;
-    color: #374151;
+    color: var(--text-secondary);
 }
 .legend span {
     display: inline-flex;
@@ -100,6 +112,31 @@ svg { width: 720px; height: 720px; }
     display: flex;
     gap: 12px;
     justify-content: flex-end;
+    align-items: center;
+}
+
+.primary-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.primary-buttons form {
+    margin: 0;
+    display: flex;
+}
+
+.action-buttons .btn {
+    height: 50px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.primary-buttons .btn-primary {
+    width: 100%;
 }
 
 .btn {
@@ -124,7 +161,7 @@ svg { width: 720px; height: 720px; }
 <div class="page-header">
     <h1 class="page-title">Graph Visualization</h1>
     <p class="page-subtitle">
-        Switch between a clean academic-style 2D graph and a fully interactive 3D visualization.
+        Explore a clear and intuitive visual representation of your graph structure, designed to highlight relationships between vertices and edges to support visual learning and core algorithm concepts.
     </p>
 </div>
 
@@ -136,7 +173,7 @@ svg { width: 720px; height: 720px; }
         </div>
 
         <div id="wrapper" class="graph-wrapper">
-            <svg id="svg"></svg>
+            <svg id="svg" viewBox="0 0 720 720"></svg>
         </div>
 
         <div class="legend">
@@ -149,25 +186,25 @@ svg { width: 720px; height: 720px; }
 <div class="card">
     <div class="action-buttons">
 
-        <!-- Chromatic Number -->
-        <form action="{{ url_for('graph.graph_coloring_chromatic') }}" method="POST">
-            <input type="hidden" name="num_vertices" value="{{ num_vertices }}">
-            {% for i in range(num_vertices) %}
-                {% for j in range(num_vertices) %}
-                    <input type="hidden" name="cell_{{ i }}_{{ j }}" value="{{ matrix[i][j] }}">
+        <div class="primary-buttons">
+            <!-- Chromatic Number -->
+            <form action="{{ url_for('graph.graph_coloring_chromatic') }}" method="POST">
+                <input type="hidden" name="num_vertices" value="{{ num_vertices }}">
+                {% for i in range(num_vertices) %}
+                    {% for j in range(num_vertices) %}
+                        <input type="hidden" name="cell_{{ i }}_{{ j }}" value="{{ matrix[i][j] }}">
+                    {% endfor %}
                 {% endfor %}
-            {% endfor %}
-            <button class="btn btn-primary">Find Chromatic</button>
-        </form>
+                <button class="btn btn-primary">Find Chromatic</button>
+            </form>
 
-        <!-- Manual Coloring -->
-        <a href="{{ url_for('graph.graph_coloring_manual') }}" class="btn btn-primary">
-    Manual Coloring
-</a>
+            <!-- Manual Coloring -->
+            <a href="{{ url_for('graph.graph_coloring_manual') }}" class="btn btn-primary">Manual Coloring</a>
+        </div>
 
-       <a href="/graph-coloring" class="btn btn-secondary">
-    ← Back
-</a>
+        <a href="/graph-coloring" class="btn btn-secondary">
+            ← Back
+        </a>
     </div>
 </div>
 

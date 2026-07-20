@@ -19,33 +19,37 @@
 .page-title{
 font-size:30px;
 font-weight:700;
+color: var(--text-primary);
 }
 
 .page-subtitle{
-color:#6b7280;
+color: var(--text-secondary);
 font-size:14px;
 }
 
 .card{
-background:#fff;
+background: var(--card-bg);
+border: 1px solid var(--border-color);
 border-radius:16px;
-box-shadow:0 10px 30px rgba(0,0,0,0.08);
+box-shadow: var(--shadow-md);
 padding:28px;
 margin-bottom:28px;
+color: var(--text-primary);
 }
 
 .result-box{
 display:flex;
 justify-content:space-between;
 align-items:center;
-background:linear-gradient(135deg,#eef2ff,#f5f3ff);
+background: var(--result-bg);
+border: 1px solid var(--result-border);
 border-radius:14px;
 padding:18px 22px;
 }
 
 .result-box strong{
 font-size:28px;
-color:#4f46e5;
+color: var(--primary-color);
 }
 
 .graph-frame{
@@ -53,9 +57,9 @@ height:420px;
 display:flex;
 justify-content:center;
 align-items:center;
-background:#f9fafb;
+background: var(--content-bg);
 border-radius:14px;
-border:1px solid #e5e7eb;
+border:1px solid var(--border-color);
 }
 
 .graph-frame img{
@@ -85,9 +89,9 @@ color:#fff;
 }
 
 .btn-secondary{
-background:#f3f4f6;
-color:#374151;
-border:1px solid #e5e7eb;
+background: var(--card-bg);
+color: var(--text-primary);
+border:1px solid var(--border-color);
 }
 
 .valid{color:#16a34a;font-weight:700;}
@@ -158,9 +162,9 @@ Invalid Coloring
             Try Another Graph
         </a>
 
-        <!-- HOME -->
-        <a href="/" class="btn btn-secondary">
-            Home
+        <!-- DASHBOARD -->
+        <a href="/dashboard" class="btn btn-secondary">
+            Back to Dashboard
         </a>
 
     </div>

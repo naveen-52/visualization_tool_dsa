@@ -5,21 +5,21 @@
         max-width: 800px;
         margin: 40px auto;
         padding: 30px;
-        background: #1e293b;
+        background: var(--card-bg);
         border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.1);
-        color: #f8fafc;
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
         font-family: 'Inter', sans-serif;
     }
     .result-box {
-        background: #0f172a;
+        background: var(--content-bg);
         padding: 20px;
         border-radius: 8px;
-        border: 1px solid rgba(99,102,241,0.3);
+        border: 1px solid var(--result-border);
         margin: 20px 0;
         word-break: break-all;
         font-size: 18px;
-        color: #38bdf8;
+        color: var(--primary-color);
     }
     .codes-grid {
         display: grid;
@@ -28,14 +28,14 @@
         margin-top: 15px;
     }
     .code-item {
-        background: rgba(255,255,255,0.05);
+        background: var(--content-bg);
         padding: 10px 15px;
         border-radius: 6px;
         text-align: center;
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid var(--border-color);
     }
-    .code-char { font-weight: bold; color: #fbbf24; margin-right: 5px; }
-    .code-binary { color: #fff; }
+    .code-char { font-weight: bold; color: var(--primary-color); margin-right: 5px; }
+    .code-binary { color: var(--text-primary); }
 </style>
 
 <div class="result-container">
@@ -51,7 +51,7 @@
     </div>
 
     <div id="mapping_section" style="display: none; margin-top: 40px;">
-        <h3 style="margin-bottom: 15px; font-size: 18px; color: #cbd5e1;">Character Mapping</h3>
+        <h3 style="margin-bottom: 15px; font-size: 18px; color: var(--text-primary);">Character Mapping</h3>
         <div id="codes_grid" class="codes-grid"></div>
     </div>
 </div>

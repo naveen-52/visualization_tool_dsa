@@ -1,111 +1,1136 @@
 {% extends "layout.html" %}
 
-{% block title %}Huffman Coding - AlgoViz Pro{% endblock %}
+{% block title %}Huffman Coding – AlgoViz Pro{% endblock %}
+
+{% block breadcrumbs %}
+<span>Home</span>
+<i class="fas fa-chevron-right breadcrumb-separator"></i>
+<span>Huffman Coding</span>
+{% endblock %}
 
 {% block content %}
-<div class="huffman-container">
 
-    <div class="huffman-hero">
-        <h1 class="huffman-title">Huffman Coding</h1>
-        <p class="huffman-subtitle">Optimal Variable-Length Compression</p>
-    </div>
+<style>
+/* ─────────────────────────────────────────────
+   DESIGN TOKENS
+───────────────────────────────────────────── */
+:root {
+    --hc-bg-page:        #020617;
+    --hc-bg-panel:       rgba(11, 18, 40, 0.65);
+    --hc-bg-panel-alt:   #0f172a;
+    --hc-bg-inset:       #0f172a;
+    --hc-border:         rgba(255, 255, 255, 0.08);
+    --hc-border-accent:  rgba(37, 99, 235, 0.35);
 
-    <div class="huffman-tool-card" style="margin-top:20px; padding:30px; background:#1e293b; border-radius:12px; border:1px solid rgba(255,255,255,0.1);">
-        <textarea 
-            id="text_input" 
-            placeholder="Enter text to encode or decode..." 
-            style="width: 100%; height: 120px; padding: 15px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); color: white; margin-bottom: 20px; font-size:16px;"
-            autocomplete="off"
-        ></textarea>
-        
-        <div style="display:flex; gap:15px; align-items:center;">
-            <button id="btn_animate" class="btn btn-primary" disabled style="padding: 12px 24px; font-weight:bold; transition:all 0.2s;">
-                <i class="fas fa-film" style="margin-right: 8px;"></i> Animate Step-by-Step
-            </button>
-            <button id="btn_encode" class="btn btn-secondary" disabled style="padding: 12px 24px; transition:all 0.2s;">
-                <i class="fas fa-lock" style="margin-right: 8px;"></i> Encode
-            </button>
-            <button id="btn_decode" class="btn btn-secondary" disabled style="padding: 12px 24px; transition:all 0.2s;">
-                <i class="fas fa-unlock" style="margin-right: 8px;"></i> Decode
-            </button>
+    --hc-indigo:         #2563eb;
+    --hc-indigo-hover:   #1d4ed8;
+    --hc-indigo-muted:   rgba(37, 99, 235, 0.15);
+    --hc-cyan:           #38bdf8;
+    --hc-amber:          #fbbf24;
+    --hc-green:          #34d399;
+    --hc-red:            #f87171;
+
+    --hc-text-primary:   #ffffff;
+    --hc-text-secondary: #cbd5e1;
+    --hc-text-muted:     #94a3b8;
+    --hc-text-code:      #38bdf8;
+
+    --hc-radius-sm:      8px;
+    --hc-radius-md:      12px;
+    --hc-radius-lg:      18px;
+
+    --hc-shadow-panel:   0 16px 40px rgba(0, 0, 0, 0.3);
+    --hc-transition:     all 0.18s ease;
+}
+
+body.light-mode-preview {
+    --hc-bg-page:        #f8fbff;
+    --hc-bg-panel:       #ffffff;
+    --hc-bg-panel-alt:   #f8fbff;
+    --hc-bg-inset:       #f8fafc;
+    --hc-border:         #e2e8f0;
+    --hc-border-accent:  rgba(37, 99, 235, 0.28);
+
+    --hc-indigo:         #2563eb;
+    --hc-indigo-hover:   #1d4ed8;
+    --hc-indigo-muted:   rgba(37, 99, 235, 0.10);
+    --hc-cyan:           #0ea5e9;
+    --hc-amber:          #f59e0b;
+    --hc-green:          #10b981;
+    --hc-red:            #ef4444;
+
+    --hc-text-primary:   #0f172a;
+    --hc-text-secondary: #475569;
+    --hc-text-muted:     #64748b;
+    --hc-text-code:      #2563eb;
+}
+
+/* ─────────────────────────────────────────────
+   PAGE WRAPPER
+───────────────────────────────────────────── */
+.hx-page {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 0 48px;
+}
+
+/* ─────────────────────────────────────────────
+   COMPACT PAGE HEADER
+───────────────────────────────────────────── */
+.hx-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--hc-border);
+}
+.hx-header-left {}
+.hx-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--hc-indigo);
+    background: var(--hc-indigo-muted);
+    border: 1px solid var(--hc-border-accent);
+    border-radius: 20px;
+    padding: 4px 12px;
+    margin-bottom: 10px;
+}
+.hx-page-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--hc-text-primary);
+    letter-spacing: -0.02em;
+    margin: 0 0 4px;
+    line-height: 1.2;
+}
+.hx-page-sub {
+    font-size: 14px;
+    color: var(--hc-text-secondary);
+    margin: 0;
+}
+.hx-header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-shrink: 0;
+}
+.hx-stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--hc-text-secondary);
+    background: var(--hc-bg-panel);
+    border: 1px solid var(--hc-border);
+    border-radius: 20px;
+    padding: 5px 14px;
+}
+.hx-stat-pill i { color: var(--hc-indigo); font-size: 11px; }
+
+/* ─────────────────────────────────────────────
+   STEP INDICATOR
+───────────────────────────────────────────── */
+.hx-stepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+.hx-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--hc-text-muted);
+    padding: 8px 14px;
+    border-radius: var(--hc-radius-sm);
+    transition: var(--hc-transition);
+}
+.hx-step.active {
+    color: var(--hc-indigo);
+    background: var(--hc-indigo-muted);
+}
+.hx-step.done {
+    color: var(--hc-green);
+}
+.hx-step.done .hx-step-num { background: var(--hc-green); color: #000; }
+.hx-step-num {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--hc-bg-inset);
+    border: 1px solid var(--hc-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.hx-step.active .hx-step-num { background: var(--hc-indigo); border-color: var(--hc-indigo); color: #fff; }
+.hx-step-sep {
+    width: 28px;
+    height: 1px;
+    background: var(--hc-border);
+    flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────
+   MAIN WORKSPACE — TWO COLUMN GRID
+───────────────────────────────────────────── */
+.hx-workspace {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+@media (max-width: 1024px) {
+    .hx-workspace { grid-template-columns: 1fr; }
+}
+
+/* ─────────────────────────────────────────────
+   PANEL SHELL
+───────────────────────────────────────────── */
+.hx-panel {
+    background: var(--hc-bg-panel);
+    border: 1px solid var(--hc-border);
+    border-radius: var(--hc-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--hc-shadow-panel);
+    display: flex;
+    flex-direction: column;
+}
+.hx-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--hc-border);
+    background: var(--hc-bg-panel-alt);
+}
+.hx-panel-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--hc-text-secondary);
+}
+.hx-panel-label i { font-size: 11px; }
+.hx-panel-label span.accent { color: var(--hc-indigo); }
+.hx-panel-tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--hc-text-muted);
+    background: var(--hc-bg-inset);
+    border: 1px solid var(--hc-border);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+.hx-panel-body {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ─────────────────────────────────────────────
+   TEXTAREA
+───────────────────────────────────────────── */
+.hx-textarea-wrap {
+    position: relative;
+}
+.hx-textarea {
+    width: 100%;
+    min-height: 160px;
+    padding: 14px 16px;
+    padding-bottom: 36px; /* room for char counter */
+    border-radius: var(--hc-radius-md);
+    background: var(--hc-bg-inset);
+    border: 1px solid var(--hc-border);
+    color: var(--hc-text-primary);
+    font-size: 14.5px;
+    font-family: 'Inter', monospace;
+    line-height: 1.65;
+    resize: vertical;
+    box-sizing: border-box;
+    transition: var(--hc-transition);
+    outline: none;
+}
+.hx-textarea::placeholder {
+    color: var(--hc-text-muted);
+    font-style: italic;
+}
+.hx-textarea:focus {
+    border-color: var(--hc-border-accent);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+.hx-char-count {
+    position: absolute;
+    bottom: 11px;
+    right: 12px;
+    font-size: 11px;
+    color: var(--hc-text-muted);
+    pointer-events: none;
+    font-variant-numeric: tabular-nums;
+}
+.hx-char-count.warn { color: var(--hc-amber); }
+
+/* ─────────────────────────────────────────────
+   ACTION ROW
+───────────────────────────────────────────── */
+.hx-action-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.hx-action-row-secondary {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+
+/* ─────────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────────── */
+.hx-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    border-radius: var(--hc-radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: var(--hc-transition);
+    text-decoration: none;
+    white-space: nowrap;
+    line-height: 1;
+}
+.hx-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+/* Primary – Encode */
+.hx-btn-primary {
+    background: var(--hc-indigo);
+    color: #fff;
+    border-color: var(--hc-indigo);
+}
+.hx-btn-primary:hover:not(:disabled) {
+    background: var(--hc-indigo-hover);
+    border-color: var(--hc-indigo-hover);
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.35);
+    transform: translateY(-1px);
+}
+.hx-btn-primary:active:not(:disabled) { transform: translateY(0); }
+
+/* Ghost – Decode */
+.hx-btn-ghost {
+    background: transparent;
+    color: var(--hc-text-secondary);
+    border-color: var(--hc-border);
+}
+.hx-btn-ghost:hover:not(:disabled) {
+    border-color: var(--hc-border-accent);
+    color: var(--hc-text-primary);
+    background: var(--hc-indigo-muted);
+}
+
+/* Slim – Reset / Copy / Animate */
+.hx-btn-slim {
+    padding: 7px 14px;
+    font-size: 12px;
+    background: transparent;
+    color: var(--hc-text-muted);
+    border-color: var(--hc-border);
+    border-radius: var(--hc-radius-sm);
+}
+.hx-btn-slim:hover:not(:disabled) {
+    color: var(--hc-text-secondary);
+    border-color: rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.04);
+}
+
+/* Animate – cyan accent */
+.hx-btn-animate {
+    background: rgba(34, 211, 238, 0.10);
+    color: var(--hc-cyan);
+    border-color: rgba(34, 211, 238, 0.30);
+}
+.hx-btn-animate:hover:not(:disabled) {
+    background: rgba(34, 211, 238, 0.18);
+    border-color: rgba(34, 211, 238, 0.55);
+    box-shadow: 0 0 14px rgba(34, 211, 238, 0.20);
+    transform: translateY(-1px);
+}
+
+/* Copy – success flash */
+.hx-btn-copy.copied {
+    color: var(--hc-green);
+    border-color: rgba(52, 211, 153, 0.40);
+    background: rgba(52, 211, 153, 0.08);
+}
+
+/* ─────────────────────────────────────────────
+   OUTPUT PANEL STATES
+───────────────────────────────────────────── */
+.hx-output-idle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 200px;
+    text-align: center;
+    color: var(--hc-text-muted);
+    padding: 32px 20px;
+}
+.hx-output-idle i { font-size: 32px; opacity: 0.35; }
+.hx-output-idle p { font-size: 13px; line-height: 1.6; max-width: 240px; margin: 0; }
+
+.hx-output-result { display: none; flex-direction: column; gap: 16px; }
+
+/* Result type badge */
+.hx-result-type {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.hx-result-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+.hx-result-badge.encode {
+    color: var(--hc-indigo);
+    background: var(--hc-indigo-muted);
+    border: 1px solid var(--hc-border-accent);
+}
+.hx-result-badge.decode {
+    color: var(--hc-green);
+    background: rgba(52, 211, 153, 0.10);
+    border: 1px solid rgba(52, 211, 153, 0.35);
+}
+
+/* Output code block */
+.hx-code-block {
+    background: var(--hc-bg-inset);
+    border: 1px solid var(--hc-border);
+    border-radius: var(--hc-radius-md);
+    padding: 14px 16px;
+    font-size: 14px;
+    color: var(--hc-text-code);
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    word-break: break-all;
+    line-height: 1.7;
+    max-height: 130px;
+    overflow-y: auto;
+    position: relative;
+}
+.hx-code-block::-webkit-scrollbar { width: 4px; }
+.hx-code-block::-webkit-scrollbar-track { background: transparent; }
+.hx-code-block::-webkit-scrollbar-thumb { background: var(--hc-border); border-radius: 4px; }
+
+/* Compression stats bar */
+.hx-stats-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.hx-stat-card {
+    flex: 1 1 90px;
+    background: var(--hc-bg-inset);
+    border: 1px solid var(--hc-border);
+    border-radius: var(--hc-radius-md);
+    padding: 12px 14px;
+    text-align: center;
+}
+.hx-stat-card .val {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--hc-text-primary);
+    font-variant-numeric: tabular-nums;
+    display: block;
+    margin-bottom: 3px;
+}
+.hx-stat-card .val.good { color: var(--hc-green); }
+.hx-stat-card .val.info { color: var(--hc-cyan); }
+.hx-stat-card .lbl {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--hc-text-muted);
+}
+
+/* Character mapping grid */
+.hx-map-head {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--hc-text-muted);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--hc-border);
+}
+.hx-codes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 8px;
+    max-height: 160px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+.hx-codes-grid::-webkit-scrollbar { width: 4px; }
+.hx-codes-grid::-webkit-scrollbar-thumb { background: var(--hc-border); border-radius: 4px; }
+.hx-code-chip {
+    background: var(--hc-bg-inset);
+    border: 1px solid var(--hc-border);
+    border-radius: var(--hc-radius-sm);
+    padding: 8px 10px;
+    text-align: center;
+    transition: var(--hc-transition);
+}
+.hx-code-chip:hover {
+    border-color: var(--hc-border-accent);
+    background: var(--hc-indigo-muted);
+}
+.hx-code-chip .char {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--hc-amber);
+    display: block;
+    margin-bottom: 3px;
+}
+.hx-code-chip .code {
+    font-size: 11px;
+    color: var(--hc-text-primary);
+    font-family: monospace;
+    word-break: break-all;
+}
+
+/* ─────────────────────────────────────────────
+   KEY CONCEPTS ROW
+───────────────────────────────────────────── */
+.hx-concepts {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+}
+.hx-concept-card {
+    background: var(--hc-bg-panel);
+    border: 1px solid var(--hc-border);
+    border-radius: var(--hc-radius-md);
+    padding: 16px 18px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: var(--hc-transition);
+}
+.hx-concept-card:hover {
+    border-color: var(--hc-border-accent);
+    background: var(--hc-bg-panel-alt);
+}
+.hx-concept-icon {
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.hx-concept-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--hc-text-primary);
+    margin: 0 0 4px;
+}
+.hx-concept-desc {
+    font-size: 12.5px;
+    color: var(--hc-text-secondary);
+    line-height: 1.55;
+    margin: 0;
+}
+
+/* ─────────────────────────────────────────────
+   LOADING SPINNER (in-button)
+───────────────────────────────────────────── */
+@keyframes hx-spin { to { transform: rotate(360deg); } }
+.hx-spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255,255,255,0.25);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: hx-spin 0.65s linear infinite;
+    display: none;
+}
+.hx-btn.loading .hx-spinner { display: block; }
+.hx-btn.loading .hx-btn-icon { display: none; }
+
+/* ─────────────────────────────────────────────
+   ERROR TOAST
+───────────────────────────────────────────── */
+.hx-toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 9999;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #1c1f2e;
+    border: 1px solid var(--hc-red);
+    border-radius: var(--hc-radius-md);
+    padding: 14px 18px;
+    max-width: 340px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: transform 0.28s ease, opacity 0.28s ease;
+    pointer-events: none;
+}
+.hx-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+.hx-toast i { color: var(--hc-red); margin-top: 1px; flex-shrink: 0; }
+.hx-toast-body {}
+.hx-toast-title { font-size: 13px; font-weight: 600; color: var(--hc-text-primary); margin-bottom: 2px; }
+.hx-toast-msg { font-size: 12px; color: var(--hc-text-secondary); line-height: 1.5; }
+.hx-toast-close {
+    background: none; border: none; color: var(--hc-text-muted);
+    cursor: pointer; padding: 0; margin-left: auto; line-height: 1;
+    font-size: 14px; flex-shrink: 0;
+}
+.hx-toast-close:hover { color: var(--hc-text-primary); }
+</style>
+
+<div class="hx-page">
+
+    <!-- ══ PAGE HERO ══════════════════════════════════════ -->
+    <section class="page-hero" style="margin-bottom: 28px;">
+        <div class="page-hero-content">
+            <div class="page-eyebrow"><i class="fas fa-code"></i> Compression Algorithm</div>
+            <h1 class="page-title">Huffman Coding</h1>
+            <p class="page-subtitle">
+                Explore how Huffman Coding achieves efficient lossless data compression by assigning optimal prefix-free binary codes based on symbol frequencies. Understand how Huffman trees are constructed step by step through guided interactive visualizations that turn complex encoding concepts into intuitive learning experiences.
+            </p>
+            <div class="page-actions">
+                <a href="#hx-stepper" class="btn btn-primary">Start compression</a>
+                <a href="/dashboard" class="btn btn-secondary">Back to dashboard</a>
+            </div>
+        </div>
+        <div class="page-hero-visual">
+            <div class="video-container">
+                <!-- Loading Spinner -->
+                <div class="video-spinner" id="video-spinner">
+                    <div class="spinner"></div>
+                </div>
+
+                <!-- Fallback poster image from our static files -->
+                <video id="demo-video" class="hero-video" loop muted playsinline preload="none" poster="{{ url_for('static', filename='Gemini_Generated_Image_ly5ov8ly5ov8ly5o.webp') }}">
+                    <source src="{{ url_for('static', filename='videos/Create_a_second_cinematic_a(2).mp4') }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ STEP FLOW INDICATOR ══════════════════════════════ -->
+    <div class="hx-stepper" id="hx-stepper">
+        <div class="hx-step active" id="step-1">
+            <div class="hx-step-num">1</div>
+            <span>Enter Text</span>
+        </div>
+        <div class="hx-step-sep"></div>
+        <div class="hx-step" id="step-2">
+            <div class="hx-step-num">2</div>
+            <span>Encode</span>
+        </div>
+        <div class="hx-step-sep"></div>
+        <div class="hx-step" id="step-3">
+            <div class="hx-step-num">3</div>
+            <span>Decode / Visualize</span>
         </div>
     </div>
 
+    <!-- ══ MAIN WORKSPACE ══════════════════════════════════ -->
+    <div class="hx-workspace">
+
+        <!-- ── INPUT PANEL ─────────────────────────────── -->
+        <div class="hx-panel" id="input-panel">
+            <div class="hx-panel-head">
+                <div class="hx-panel-label">
+                    <i class="fas fa-keyboard accent"></i>
+                    <span>Input <span class="accent">Panel</span></span>
+                </div>
+                <span class="hx-panel-tag">plaintext</span>
+            </div>
+            <div class="hx-panel-body">
+                <!-- Textarea -->
+                <div class="hx-textarea-wrap">
+                    <textarea
+                        id="hx-input"
+                        class="hx-textarea"
+                        spellcheck="false"
+                        autocomplete="off"
+                        autocorrect="off"
+                        placeholder="Type or paste any text here…&#10;&#10;Example: hello huffman world"
+                        maxlength="5000"
+                    ></textarea>
+                    <span class="hx-char-count" id="hx-char-count">0 / 5000</span>
+                </div>
+
+                <!-- Primary actions -->
+                <div class="hx-action-row">
+                    <button class="hx-btn hx-btn-primary" id="btn-encode" disabled>
+                        <span class="hx-spinner"></span>
+                        <i class="fas fa-lock hx-btn-icon"></i>
+                        Encode
+                    </button>
+                    <button class="hx-btn hx-btn-ghost" id="btn-decode" disabled>
+                        <span class="hx-spinner"></span>
+                        <i class="fas fa-unlock hx-btn-icon"></i>
+                        Decode
+                    </button>
+                </div>
+
+                <!-- Secondary actions -->
+                <div class="hx-action-row-secondary">
+                    <button class="hx-btn hx-btn-animate hx-btn-slim" id="btn-animate" disabled>
+                        <i class="fas fa-play-circle"></i>
+                        Animate Step-by-Step
+                    </button>
+                    <button class="hx-btn hx-btn-slim" id="btn-reset">
+                        <i class="fas fa-redo-alt"></i>
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── OUTPUT PANEL ─────────────────────────────── -->
+        <div class="hx-panel" id="output-panel">
+            <div class="hx-panel-head">
+                <div class="hx-panel-label">
+                    <i class="fas fa-terminal accent"></i>
+                    <span>Output <span class="accent">Panel</span></span>
+                </div>
+                <button class="hx-btn hx-btn-slim hx-btn-copy" id="btn-copy" disabled style="padding:5px 12px;">
+                    <i class="fas fa-copy"></i>
+                    Copy
+                </button>
+            </div>
+            <div class="hx-panel-body">
+                <!-- Idle state -->
+                <div class="hx-output-idle" id="output-idle">
+                    <i class="fas fa-arrow-left" style="transform: rotate(0deg);"></i>
+                    <p>Enter text in the Input Panel, then click <strong style="color:var(--hc-text-secondary);">Encode</strong> to see the binary output here.</p>
+                </div>
+
+                <!-- Result state -->
+                <div class="hx-output-result" id="output-result">
+                    <!-- Type badge + timestamp -->
+                    <div class="hx-result-type">
+                        <span class="hx-result-badge encode" id="result-badge">
+                            <i class="fas fa-lock"></i>
+                            Encoded
+                        </span>
+                        <span style="font-size:11px; color:var(--hc-text-muted);" id="result-time"></span>
+                    </div>
+
+                    <!-- Binary / decoded output -->
+                    <div>
+                        <div class="hx-map-head" style="margin-bottom:8px;">Output</div>
+                        <div class="hx-code-block" id="result-output">—</div>
+                    </div>
+
+                    <!-- Stats row (encode only) -->
+                    <div class="hx-stats-row" id="stats-row" style="display:none;">
+                        <div class="hx-stat-card">
+                            <span class="val info" id="stat-orig">—</span>
+                            <span class="lbl">Original bits</span>
+                        </div>
+                        <div class="hx-stat-card">
+                            <span class="val info" id="stat-comp">—</span>
+                            <span class="lbl">Encoded bits</span>
+                        </div>
+                        <div class="hx-stat-card">
+                            <span class="val good" id="stat-ratio">—</span>
+                            <span class="lbl">Space saved</span>
+                        </div>
+                    </div>
+
+                    <!-- Code mapping -->
+                    <div id="mapping-section" style="display:none;">
+                        <div class="hx-map-head">Character → Code Map</div>
+                        <div class="hx-codes-grid" id="codes-grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ HOW IT WORKS ══════════════════════════════════ -->
+    <section class="page-card">
+        <div class="page-card-title" style="margin-bottom: 12px;">How it works</div>
+        <div class="card-description" style="color: var(--text-secondary); line-height: 1.7;">
+            <p><strong>Huffman Coding</strong> achieves efficient lossless data compression by building an optimal binary tree based on symbol frequencies. NEC AlgoViz transforms this encoding process into an interactive visual experience, helping you observe how binary codes are assigned without losing any original data.</p>
+            <p style="margin-top: 10px;">The algorithm constructs the <strong>Huffman Tree</strong> through a greedy approach that repeatedly merges the two lowest-frequency nodes, placing rare characters deeper in the tree structure.</p>
+            <p style="margin-top: 8px;"><strong>Variable-Length Encoding</strong> assigns shorter binary bit sequences to frequently occurring characters and longer codes to less frequent ones, maximizing overall compression efficiency.</p>
+            <p style="margin-top: 10px;">Because no character's binary code forms the prefix of another, the resulting <strong>Prefix-Free Codes</strong> guarantee unambiguous, instant decoding during data retrieval.</p>
+        </div>
+    </section>
+
+</div>
+
+<!-- ══ ERROR TOAST ═══════════════════════════════════════ -->
+<div class="hx-toast" id="hx-toast" role="alert">
+    <i class="fas fa-exclamation-circle"></i>
+    <div class="hx-toast-body">
+        <div class="hx-toast-title">Something went wrong</div>
+        <div class="hx-toast-msg" id="toast-msg"></div>
+    </div>
+    <button class="hx-toast-close" id="toast-close"><i class="fas fa-times"></i></button>
 </div>
 
 <script>
-    const textarea = document.getElementById('text_input');
-    const btnAnimate = document.getElementById('btn_animate');
-    const btnEncode = document.getElementById('btn_encode');
-    const btnDecode = document.getElementById('btn_decode');
+(function () {
+    /* ── DOM refs ─────────────────────────────────── */
+    const input        = document.getElementById('hx-input');
+    const charCount    = document.getElementById('hx-char-count');
+    const btnEncode    = document.getElementById('btn-encode');
+    const btnDecode    = document.getElementById('btn-decode');
+    const btnAnimate   = document.getElementById('btn-animate');
+    const btnReset     = document.getElementById('btn-reset');
+    const btnCopy      = document.getElementById('btn-copy');
 
-    textarea.addEventListener('input', () => {
-        const isEmpty = textarea.value.trim() === '';
-        btnAnimate.disabled = isEmpty;
-        btnEncode.disabled = isEmpty;
-        btnDecode.disabled = isEmpty;
-        
-        const opacity = isEmpty ? '0.5' : '1';
-        const cursor = isEmpty ? 'not-allowed' : 'pointer';
-        
-        [btnAnimate, btnEncode, btnDecode].forEach(btn => {
-            btn.style.opacity = opacity;
-            btn.style.cursor = cursor;
+    const outputIdle   = document.getElementById('output-idle');
+    const outputResult = document.getElementById('output-result');
+    const resultBadge  = document.getElementById('result-badge');
+    const resultTime   = document.getElementById('result-time');
+    const resultOutput = document.getElementById('result-output');
+    const statsRow     = document.getElementById('stats-row');
+    const mappingSection = document.getElementById('mapping-section');
+    const codesGrid    = document.getElementById('codes-grid');
+
+    const step1 = document.getElementById('step-1');
+    const step2 = document.getElementById('step-2');
+    const step3 = document.getElementById('step-3');
+
+    const toast    = document.getElementById('hx-toast');
+    const toastMsg = document.getElementById('toast-msg');
+    const toastClose = document.getElementById('toast-close');
+
+    /* ── Session state ──────────────────────────── */
+    const SK_INPUT   = 'huffman_user_input';
+    const SK_CODES   = 'huffman_current_codes';
+    const SK_ENCODED = 'huffman_current_encoded';
+
+    let currentCodes   = null;
+    let currentEncoded = null;
+    let toastTimer     = null;
+
+    /* ── Restore session ────────────────────────── */
+    const saved = sessionStorage.getItem(SK_INPUT);
+    if (saved) input.value = saved;
+
+    try {
+        const sc = sessionStorage.getItem(SK_CODES);
+        const se = sessionStorage.getItem(SK_ENCODED);
+        if (sc) currentCodes   = JSON.parse(sc);
+        if (se) currentEncoded = se;
+    } catch (_) {}
+
+    /* ── Stepper helpers ────────────────────────── */
+    function setStep(n) {
+        [step1, step2, step3].forEach((s, i) => {
+            s.classList.remove('active', 'done');
+            if (i + 1 < n)  s.classList.add('done');
+            if (i + 1 === n) s.classList.add('active');
         });
-    });
-    
-    // Trigger evaluation on load
-    textarea.dispatchEvent(new Event('input'));
+    }
 
+    /* ── Button state ───────────────────────────── */
+    function syncButtons() {
+        const empty = input.value.trim() === '';
+        btnEncode.disabled  = empty;
+        btnAnimate.disabled = empty;
+        btnDecode.disabled  = !currentCodes || !currentEncoded;
+    }
+
+    /* ── Char counter ───────────────────────────── */
+    function updateCharCount() {
+        const len = input.value.length;
+        charCount.textContent = len.toLocaleString() + ' / 5,000';
+        charCount.classList.toggle('warn', len > 4000);
+    }
+
+    /* ── Input event ────────────────────────────── */
+    input.addEventListener('input', () => {
+        updateCharCount();
+        sessionStorage.setItem(SK_INPUT, input.value);
+
+        // Invalidate stale state when user types new text
+        if (currentCodes || currentEncoded) {
+            currentCodes = currentEncoded = null;
+            sessionStorage.removeItem(SK_CODES);
+            sessionStorage.removeItem(SK_ENCODED);
+            setStep(1);
+        }
+
+        syncButtons();
+        if (input.value.trim() !== '') setStep(1);
+    });
+
+    /* ── Toast ──────────────────────────────────── */
+    function showError(msg) {
+        toastMsg.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 5000);
+    }
+    toastClose.addEventListener('click', () => toast.classList.remove('show'));
+
+    /* ── Loading state ──────────────────────────── */
+    function setLoading(btn, on) {
+        btn.classList.toggle('loading', on);
+        btn.disabled = on;
+    }
+
+    /* ── Display result ─────────────────────────── */
+    function showResult(type, output, codes) {
+        outputIdle.style.display   = 'none';
+        outputResult.style.display = 'flex';
+        btnCopy.disabled = false;
+
+        /* Badge */
+        resultBadge.className = 'hx-result-badge ' + type;
+        resultBadge.innerHTML = type === 'encode'
+            ? '<i class="fas fa-lock"></i> Encoded'
+            : '<i class="fas fa-unlock"></i> Decoded';
+
+        /* Timestamp */
+        resultTime.textContent = new Intl.DateTimeFormat('en', {
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+        }).format(new Date());
+
+        /* Output block */
+        resultOutput.textContent = output;
+
+        /* Stats (encode only) */
+        if (type === 'encode' && codes) {
+            const origBits = input.value.trim().length * 8;
+            const compBits = output.length;
+            const saved    = origBits > 0 ? Math.round((1 - compBits / origBits) * 100) : 0;
+
+            document.getElementById('stat-orig').textContent  = origBits.toLocaleString();
+            document.getElementById('stat-comp').textContent  = compBits.toLocaleString();
+            document.getElementById('stat-ratio').textContent = saved + '%';
+            statsRow.style.display = 'flex';
+        } else {
+            statsRow.style.display = 'none';
+        }
+
+        /* Code map */
+        if (codes) {
+            codesGrid.innerHTML = '';
+            Object.entries(codes)
+                .sort(([,a],[,b]) => a.length - b.length)
+                .forEach(([ch, code]) => {
+                    const chip = document.createElement('div');
+                    chip.className = 'hx-code-chip';
+                    const display = ch === ' ' ? '␣' : ch === '\n' ? '↵' : ch;
+                    chip.innerHTML =
+                        `<span class="char" title="char: ${ch === ' ' ? 'space' : ch}">${display}</span>` +
+                        `<span class="code">${code}</span>`;
+                    codesGrid.appendChild(chip);
+                });
+            mappingSection.style.display = 'block';
+        } else {
+            mappingSection.style.display = 'none';
+        }
+    }
+
+    /* ── ENCODE ─────────────────────────────────── */
     btnEncode.addEventListener('click', async () => {
+        const text = input.value.trim();
+        if (!text) return;
+        setLoading(btnEncode, true);
+        setStep(2);
         try {
-            const res = await fetch('/huffman/encode', {
+            const res  = await fetch('/huffman/encode', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: textarea.value.trim() })
+                body: JSON.stringify({ text })
             });
             const data = await res.json();
             if (data.error) throw new Error(data.error);
-            
-            localStorage.setItem('huffman_result', JSON.stringify({ action: 'Encoding', ...data }));
-            window.location.href = '/huffman/result';
-        } catch (e) {
-            alert('Request Failed: ' + e.message);
+
+            currentCodes   = data.codes;
+            currentEncoded = data.encoded;
+            sessionStorage.setItem(SK_CODES, JSON.stringify(currentCodes));
+            sessionStorage.setItem(SK_ENCODED, currentEncoded);
+
+            showResult('encode', data.encoded, data.codes);
+            setStep(3);
+            syncButtons();
+        } catch (err) {
+            showError(err.message);
+            setStep(1);
+        } finally {
+            setLoading(btnEncode, false);
+            syncButtons();
         }
     });
 
+    /* ── DECODE ─────────────────────────────────── */
     btnDecode.addEventListener('click', async () => {
+        if (!currentCodes || !currentEncoded) {
+            showError("No encoded payload found. Click 'Encode' first.");
+            return;
+        }
+        setLoading(btnDecode, true);
         try {
-            const res = await fetch('/huffman/decode', {
+            const res  = await fetch('/huffman/decode', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ encoded: textarea.value.trim() })
+                body: JSON.stringify({ encoded: currentEncoded, codes: currentCodes })
             });
             const data = await res.json();
             if (data.error) throw new Error(data.error);
-            
-            localStorage.setItem('huffman_result', JSON.stringify({ action: 'Decoding', output: data.decoded }));
-            window.location.href = '/huffman/result';
-        } catch (e) {
-            alert('Request Failed: ' + e.message);
+
+            showResult('decode', data.decoded, currentCodes);
+        } catch (err) {
+            showError(err.message);
+        } finally {
+            setLoading(btnDecode, false);
         }
     });
 
+    /* ── ANIMATE ────────────────────────────────── */
     btnAnimate.addEventListener('click', async () => {
+        const text = input.value.trim();
+        if (!text) return;
+        setLoading(btnAnimate, true);
         try {
-            const res = await fetch('/huffman/encode', {
+            const res  = await fetch('/huffman/encode', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: textarea.value.trim() })
+                body: JSON.stringify({ text })
             });
             const data = await res.json();
             if (data.error) throw new Error(data.error);
-            
+
             localStorage.setItem('huffman_steps', JSON.stringify(data.steps));
             window.location.href = '/huffman/visualize';
-        } catch (e) {
-            alert('Request Failed: ' + e.message);
+        } catch (err) {
+            showError(err.message);
+            setLoading(btnAnimate, false);
         }
     });
+
+    /* ── RESET ──────────────────────────────────── */
+    btnReset.addEventListener('click', () => {
+        input.value = '';
+        currentCodes = currentEncoded = null;
+        sessionStorage.removeItem(SK_INPUT);
+        sessionStorage.removeItem(SK_CODES);
+        sessionStorage.removeItem(SK_ENCODED);
+
+        outputIdle.style.display   = '';
+        outputResult.style.display = 'none';
+        btnCopy.disabled = true;
+        btnCopy.classList.remove('copied');
+        btnCopy.innerHTML = '<i class="fas fa-copy"></i> Copy';
+
+        updateCharCount();
+        syncButtons();
+        setStep(1);
+        input.focus();
+    });
+
+    /* ── COPY ───────────────────────────────────── */
+    btnCopy.addEventListener('click', () => {
+        const text = resultOutput.textContent;
+        if (!text || text === '—') return;
+        navigator.clipboard.writeText(text).then(() => {
+            btnCopy.classList.add('copied');
+            btnCopy.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => {
+                btnCopy.classList.remove('copied');
+                btnCopy.innerHTML = '<i class="fas fa-copy"></i> Copy';
+            }, 2000);
+        });
+    });
+
+    /* ── Init ───────────────────────────────────── */
+    updateCharCount();
+    syncButtons();
+    if (input.value.trim()) setStep(1);
+})();
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('demo-video');
+    const spinner = document.getElementById('video-spinner');
+
+    if (video) {
+        // Hide spinner when video starts playing or metadata loads
+        const hideSpinner = () => {
+            if (spinner) spinner.classList.add('hidden');
+        };
+        video.addEventListener('loadeddata', hideSpinner);
+        video.addEventListener('playing', hideSpinner);
+        video.addEventListener('waiting', () => {
+            if (spinner) spinner.classList.remove('hidden');
+        });
+
+        // Autoplay when visible (using Intersection Observer)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    video.play().catch(error => {
+                        console.log('Autoplay was prevented by browser policy:', error);
+                    });
+                } else {
+                    video.pause();
+                }
+            });
+        }, { threshold: 0.15 });
+
+        observer.observe(video);
+    }
+});
 </script>
 {% endblock %}

@@ -134,14 +134,14 @@ function drawTree(steps) {
 
     const tree = document.getElementById("tree");
     document.getElementById("nodes").innerHTML = "";
-document.getElementById("edges").innerHTML = "";
+    document.getElementById("edges").innerHTML = "";
 
     let positions = {};
     
-    const spacing = Math.min(100, treeWidth / totalLeaves);
     const totalLeaves = steps.filter(s => s.type === "count").length;
     const treeWidth = document.getElementById("tree").offsetWidth;
-const startX = treeWidth / 2 - (totalLeaves * spacing) / 2;
+    const spacing = Math.min(100, treeWidth / (totalLeaves || 1));
+    const startX = treeWidth / 2 - (totalLeaves * spacing) / 2;
     let index = 0;
 
     for (let step of steps) {

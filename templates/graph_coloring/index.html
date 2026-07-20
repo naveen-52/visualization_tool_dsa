@@ -9,202 +9,133 @@
 {% endblock %}
 
 {% block content %}
-<style>
-    .page-header {
-        margin-bottom: 24px;
-    }
-    .page-title {
-        font-size: 28px;
-        font-weight: 700;
-        margin-bottom: 6px;
-    }
-    .page-subtitle {
-        color: #6b7280;
-        font-size: 14px;
-        max-width: 720px;
-    }
+<div class="page-shell">
+    <section class="page-hero">
+        <div class="page-hero-content">
+            <div class="page-eyebrow"><i class="fas fa-palette"></i> Interactive graph analysis</div>
+            <h1 class="page-title">Graph Coloring</h1>
+            <p class="page-subtitle">
+                Explore how the Welsh-Powell algorithm systematically colors graph vertices through interactive, real-time visualizations. Learn how adjacent nodes are assigned distinct colors without conflicts through intuitive, step-by-step visual execution.
+            </p>
+            <div class="page-actions">
+                <a href="#configure-card" class="btn btn-primary">Start coloring</a>
+                <a href="/dashboard" class="btn btn-secondary">Back to dashboard</a>
+            </div>
+        </div>
+        <div class="page-hero-visual">
+            <div class="video-container">
+                <!-- Loading Spinner -->
+                <div class="video-spinner" id="video-spinner">
+                    <div class="spinner"></div>
+                </div>
 
-    .card {
-        background: #ffffff;
-        border-radius: 14px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        padding: 24px;
-        margin-bottom: 24px;
-    }
-    .card-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 16px;
-    }
-    .card-title {
-        font-size: 18px;
-        font-weight: 600;
-        margin: 0;
-    }
-    .card-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        display: grid;
-        place-items: center;
-        background: linear-gradient(135deg, #6366f1, #4f46e5);
-        color: #ffffff;
-        font-size: 16px;
-    }
+                <!-- Fallback poster image from our static files -->
+                <video id="demo-video" class="hero-video" loop muted playsinline preload="none" poster="{{ url_for('static', filename='Gemini_Generated_Image_ly5ov8ly5ov8ly5o.webp') }}">
+                    <source src="{{ url_for('static', filename='videos/Create_a_second_cinematic_a.mp4') }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+    </section>
 
-    .alert {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        background: #eef2ff;
-        color: #3730a3;
-        border-radius: 10px;
-        padding: 12px 14px;
-        font-size: 14px;
-        margin-bottom: 20px;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-        max-width: 320px;
-    }
-    .form-label {
-        display: block;
-        font-size: 14px;
-        font-weight: 600;
-        color: #374151;
-        margin-bottom: 6px;
-    }
-    .form-input {
-        width: 100%;
-        height: 44px;
-        border-radius: 10px;
-        border: 1px solid #d1d5db;
-        padding: 0 14px;
-        font-size: 14px;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-    .form-input:focus {
-        outline: none;
-        border-color: #6366f1;
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-    }
-
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 18px;
-        border-radius: 10px;
-        font-size: 14px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        cursor: pointer;
-        border: none;
-    }
-    .btn-primary {
-        background: linear-gradient(135deg, #6366f1, #4f46e5);
-        color: #ffffff;
-    }
-    .btn-primary:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
-    }
-    .btn-secondary {
-        background: #f3f4f6;
-        color: #374151;
-        border: 1px solid #e5e7eb;
-    }
-    .btn-secondary:hover {
-        background: #e5e7eb;
-    }
-
-    .card-description {
-        color: #374151;
-        font-size: 14px;
-        line-height: 1.7;
-        max-width: 820px;
-    }
-    .card-description ol {
-        margin-top: 10px;
-        margin-left: 20px;
-        line-height: 1.8;
-    }
-</style>
-
-<div class="page-header">
-    <h1 class="page-title">Graph Coloring Algorithm</h1>
-    <p class="page-subtitle">
-        Visualize graph coloring using the Welsh-Powell algorithm to determine the chromatic number
-        and understand how colors are assigned efficiently.
-    </p>
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Configure Your Graph</h3>
-        <div class="card-icon">
-            <i class="fas fa-palette"></i>
+    <div class="page-info-grid">
+        <div class="page-info-card">
+            <h4>Interactive Graph Setup</h4>
+            <p>Configure custom graph vertices and adjacency parameters to launch real-time algorithm execution and explore graph coloring interactively.</p>
+        </div>
+        <div class="page-info-card">
+            <h4>Conflict-Free Coloring</h4>
+            <p>Understand how vertex degree ordering guides optimal color choices step by step, ensuring adjacent nodes never share matching colors.</p>
+        </div>
+        <div class="page-info-card">
+            <h4>Intuitive Step-by-Step Learning</h4>
+            <p>Transform complex graph theory into clear visual representations through guided execution steps designed for students and developers.</p>
         </div>
     </div>
 
-    <div class="alert">
-        <i class="fas fa-info-circle"></i>
-        <span>Enter the number of vertices to generate an adjacency matrix for graph coloring.</span>
-    </div>
-
-    <form action="/graph-coloring/matrix" method="POST">
-        <div class="form-group">
-            <label class="form-label" for="num_vertices">Number of Vertices</label>
-            <input
-                type="number"
-                id="num_vertices"
-                name="num_vertices"
-                class="form-input"
-                min="2"
-                max="120"
-                required
-                placeholder="Enter the Vertices ...">
+    <section class="page-card" id="configure-card">
+        <div class="page-card-header">
+            <div class="page-card-title">Configure your graph</div>
+            <div class="page-card-icon"><i class="fas fa-palette"></i></div>
         </div>
 
-        <div class="action-buttons">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-arrow-right"></i>
-                Create Matrix
-            </button>
-            <a href="/" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i>
-                Back to Dashboard
-            </a>
+        <div class="alert alert-info" style="margin-bottom: 18px;">
+            <i class="fas fa-info-circle"></i>
+            <span>Specify the number of vertices to generate an interactive adjacency matrix and start your graph coloring session.</span>
         </div>
-    </form>
+
+        <form action="/graph-coloring/matrix" method="POST">
+            <div class="form-group" style="max-width: 320px; margin-bottom: 20px;">
+                <label class="form-label" for="num_vertices">Number of Vertices</label>
+                <input
+                    type="number"
+                    id="num_vertices"
+                    name="num_vertices"
+                    class="form-input"
+                    min="2"
+                    max="120"
+                    required
+                    placeholder="Enter the Vertices ...">
+            </div>
+
+            <div class="action-buttons" style="justify-content: flex-start;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-arrow-right"></i>
+                    Create Matrix
+                </button>
+                <a href="/dashboard" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </form>
+    </section>
+
+    <section class="page-card">
+        <div class="page-card-title" style="margin-bottom: 12px;">How it works</div>
+        <div class="card-description" style="color: var(--text-secondary); line-height: 1.7;">
+            <p><strong>Graph Coloring</strong> is a fundamental problem in graph theory that ensures adjacent vertices connected by an edge never share the same color. NEC AlgoViz transforms this abstract concept into an interactive visual experience, helping you observe how colors are dynamically assigned across graph networks in real time.</p>
+            <p style="margin-top: 10px;">Through the <strong>Welsh-Powell Algorithm</strong>, learners explore a systematic strategy that produces conflict-free colorings by prioritizing high-degree vertices. Understand the algorithm's decision-making process across three guided learning phases:</p>
+            <ol style="margin: 10px 0 0 18px; line-height: 1.8;">
+                <li><strong>Vertex Prioritization:</strong> Observe how vertices are ordered by degree, giving precedence to highly connected nodes to optimize color distribution.</li>
+                <li><strong>Sequential Color Assignment:</strong> Watch the algorithm assign the first available color to non-adjacent vertices step by step without creating conflicts.</li>
+                <li><strong>Conflict Validation:</strong> Inspect the final visual graph to verify that all adjacent node conflicts are eliminated and the optimal chromatic solution is achieved.</li>
+            </ol>
+        </div>
+    </section>
 </div>
 
-<div class="card">
-    <h3 class="card-title" style="margin-bottom: 12px;">How It Works</h3>
-    <div class="card-description">
-        <p>
-            <strong>Graph Coloring</strong> assigns colors to vertices such that no two adjacent
-            vertices share the same color. The smallest number of colors required is known as the
-            <strong>chromatic number</strong>.
-        </p>
-        <p style="margin-top: 12px;">
-            <strong>Welsh-Powell Algorithm</strong> follows these steps:
-        </p>
-        <ol>
-            <li>Sort vertices in descending order based on degree</li>
-            <li>Assign the first available color to each vertex</li>
-            <li>Ensure adjacent vertices never share the same color</li>
-        </ol>
-    </div>
-</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('demo-video');
+    const spinner = document.getElementById('video-spinner');
+
+    if (video) {
+        // Hide spinner when video starts playing or metadata loads
+        const hideSpinner = () => {
+            if (spinner) spinner.classList.add('hidden');
+        };
+        video.addEventListener('loadeddata', hideSpinner);
+        video.addEventListener('playing', hideSpinner);
+        video.addEventListener('waiting', () => {
+            if (spinner) spinner.classList.remove('hidden');
+        });
+
+        // Autoplay when visible (using Intersection Observer)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    video.play().catch(error => {
+                        console.log('Autoplay was prevented by browser policy:', error);
+                    });
+                } else {
+                    video.pause();
+                }
+            });
+        }, { threshold: 0.15 });
+
+        observer.observe(video);
+    }
+});
+</script>
 {% endblock %}

@@ -22,30 +22,34 @@ margin-bottom:24px;
 font-size:28px;
 font-weight:700;
 margin-bottom:6px;
+color: var(--text-primary);
 }
 
 .page-subtitle{
-color:#6b7280;
+color: var(--text-secondary);
 font-size:14px;
 }
 
 .card{
-background:#ffffff;
+background: var(--card-bg);
+border: 1px solid var(--border-color);
 border-radius:14px;
-box-shadow:0 10px 30px rgba(0,0,0,0.08);
+box-shadow: var(--shadow-md);
 padding:24px;
+color: var(--text-primary);
 }
 
 .card-title{
 font-size:18px;
 font-weight:600;
 margin-bottom:16px;
+color: var(--text-primary);
 }
 
 .matrix-container{
 overflow:auto;
 border-radius:12px;
-border:1px solid #e5e7eb;
+border:1px solid var(--border-color);
 margin-bottom:24px;
 }
 
@@ -61,7 +65,7 @@ width:60px;
 height:50px;
 
 border-radius:10px;
-border:1px solid #d1d5db;
+border:1px solid var(--border-color);
 
 text-align:center;
 
@@ -70,7 +74,8 @@ font-weight:600;
 
 outline:none;
 
-background:#ffffff;
+background: var(--input-bg);
+color: var(--text-primary);
 
 }
 
@@ -90,8 +95,9 @@ margin:0;
 
 .diagonal input{
 
-background:#e5e7eb;
-color:#6b7280;
+background: var(--content-bg) !important;
+color: var(--text-secondary) !important;
+border: 1.5px dashed var(--border-color) !important;
 font-weight:700;
 cursor:not-allowed;
 
@@ -100,8 +106,8 @@ cursor:not-allowed;
 /* focus effect */
 
 .matrix-cell input:focus{
-border-color:#6366f1;
-box-shadow:0 0 0 2px rgba(99,102,241,0.2);
+border-color: var(--primary-color);
+box-shadow:0 0 0 2px rgba(37,99,235,0.2);
 }
 
 .action-buttons{
@@ -130,9 +136,9 @@ border:none;
 }
 
 .btn-secondary{
-background:#f3f4f6;
-color:#374151;
-border:1px solid #e5e7eb;
+background: var(--card-bg);
+color: var(--text-primary);
+border:1px solid var(--border-color);
 }
 
 .btn-danger{

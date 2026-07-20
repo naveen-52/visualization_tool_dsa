@@ -1,77 +1,171 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AlgoViz Pro{% endblock %}</title>
+    <title>{% block title %}NEC AlgoViz{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
-    <div class="app-container">
+    <script>
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode-preview');
+        }
+    </script>
+
+    <div class="app-container {% if request.endpoint == 'landing' %}no-sidebar{% endif %}">
+
+        {% if request.endpoint != 'landing' %}
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <div class="logo">
-                    <i class="fas fa-project-diagram"></i>
-                    <span class="logo-text">AlgoViz Pro</span>
-                </div>
-                <button class="sidebar-toggle" id="sidebarToggle">
-                    <i class="fas fa-bars"></i>
+                <a href="/dashboard" class="logo-link" aria-label="Go to dashboard">
+                    <i class="fas fa-project-diagram brand-logo"></i>
+                    <span class="logo-text">NEC AlgoViz</span>
+                </a>
+                <button class="sidebar-close" id="sidebarClose" type="button" aria-label="Close sidebar">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
 
             <nav class="sidebar-nav">
-                <a href="/" class="nav-item {% if request.endpoint == 'index' %}active{% endif %}">
+                <a href="/dashboard" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="/graph-coloring" class="nav-item {% if 'graph_coloring' in request.endpoint %}active{% endif %}">
+
+                <a href="/graph-coloring"
+                    class="nav-item {% if request.endpoint and 'graph_coloring' in request.endpoint %}active{% endif %}">
                     <i class="fas fa-palette"></i>
                     <span>Graph Coloring</span>
                 </a>
-                <a href="/mst" class="nav-item {% if 'mst' in request.endpoint %}active{% endif %}">
+
+                <a href="/mst"
+                    class="nav-item {% if request.endpoint and 'mst' in request.endpoint %}active{% endif %}">
                     <i class="fas fa-network-wired"></i>
-                    <span>MST Algorithm</span>
+                    <span>Minimum Spanning Tree</span>
                 </a>
-                <a href="/huffman" class="nav-item {% if 'huffman' in request.endpoint %}active{% endif %}">
+
+                <a href="/huffman"
+                    class="nav-item {% if request.endpoint and 'huffman' in request.endpoint %}active{% endif %}">
                     <i class="fas fa-code"></i>
                     <span>Huffman Coding</span>
                 </a>
-            </nav>
 
-            <div class="sidebar-footer">
-                <div class="user-profile">
-                    <div class="user-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="user-info">
-                        <div class="user-name">Algorithm Expert</div>
-                        <div class="user-role">Developer</div>
-                    </div>
-                </div>
-            </div>
+                <a href="/about" class="nav-item {% if request.endpoint == 'about' %}active{% endif %}">
+                    <i class="fas fa-info-circle"></i>
+                    <span>About</span>
+                </a>
+            </nav>
         </aside>
+        {% endif %}
 
         <div class="main-content">
+
+            {% if request.endpoint != 'landing' %}
             <header class="header">
-                <div class="breadcrumbs">
-                    <i class="fas fa-home"></i>
-                    {% block breadcrumbs %}
-                    <span>Home</span>
-                    {% endblock %}
+                <!-- Hamburger Menu Toggle -->
+                <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Open sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <!-- LEFT BRAND -->
+                <div class="header-brand">
+                    <a href="/dashboard" class="brand-link">
+                        <i class="fas fa-project-diagram brand-logo"></i>
+                        <div class="brand-text-group">
+                            <span class="brand-name">NEC AlgoViz</span>
+                            <span class="brand-subtitle">Interactive Algorithm Visualization</span>
+                        </div>
+                    </a>
                 </div>
-                <div class="header-actions">
-                    <button class="header-icon">
-                        <i class="fas fa-bell"></i>
-                    </button>
-                    <button class="header-icon">
-                        <i class="fas fa-cog"></i>
+
+                <!-- CENTER NAVIGATION -->
+                <nav class="header-nav" id="headerNav">
+                    <a href="/dashboard"
+                        class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a>
+                    <div class="nav-dropdown" id="algosDropdown">
+                        <button class="nav-link dropdown-trigger" type="button" aria-haspopup="true"
+                            aria-expanded="false">
+                            Algorithms <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 2px;"></i>
+                        </button>
+                        <div class="nav-dropdown-menu">
+                            <a href="/graph-coloring"
+                                class="dropdown-item {% if request.endpoint and 'graph_coloring' in request.endpoint %}active{% endif %}">
+                                <i class="fas fa-palette"></i> Graph Coloring
+                            </a>
+                            <a href="/mst"
+                                class="dropdown-item {% if request.endpoint and 'mst' in request.endpoint %}active{% endif %}">
+                                <i class="fas fa-network-wired"></i> Minimum Spanning Tree
+                            </a>
+                            <a href="/huffman"
+                                class="dropdown-item {% if request.endpoint and 'huffman' in request.endpoint %}active{% endif %}">
+                                <i class="fas fa-code"></i> Huffman Coding
+                            </a>
+                        </div>
+                    </div>
+                    <a href="/about" class="nav-link {% if request.endpoint == 'about' %}active{% endif %}">About</a>
+                </nav>
+
+                <!-- RIGHT ACTIONS -->
+                <div class="header-right">
+                     <!-- Search Box -->
+                    <div class="header-search">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" id="headerSearchInput"
+                            placeholder="Search algorithms..." aria-label="Search algorithms" autocomplete="off">
+                        <div id="headerSearchDropdown" class="search-results-dropdown"></div>
+                    </div>
+
+                    <!-- Explore Button -->
+                    <a href="/dashboard#algo-cards" class="explore-btn">
+                        <span>Explore Algorithms</span>
+                    </a>
+
+                    <!-- Action Icons -->
+                    <div class="action-buttons-group">
+                        <button class="action-icon-btn" id="themeToggleBtn" title="Theme Toggle"><i
+                                class="fas fa-moon"></i></button>
+                        <div class="notification-dropdown" id="notificationDropdownContainer" style="position: relative;">
+                            <button class="action-icon-btn" id="notificationBtn" title="Notifications" type="button">
+                                <i class="fas fa-bell"></i>
+                                <span class="notification-badge" style="position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%;"></span>
+                            </button>
+                            <div class="dropdown-menu" id="notificationMenu" style="right: 0; min-width: 280px;">
+                                <div class="dropdown-header" style="font-weight: 600; padding: 10px 12px; border-bottom: 1px solid var(--border-color); color: var(--text-primary);">Notifications</div>
+                                <div class="notification-items">
+                                    <div class="notification-item" style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; font-size: 13px; color: var(--text-primary); border-bottom: 1px solid var(--border-color);">
+                                        <i class="fas fa-check-circle" style="color: #10b981; margin-top: 3px; font-size: 14px; flex-shrink: 0;"></i>
+                                        <span>Graph Coloring updated</span>
+                                    </div>
+                                    <div class="notification-item" style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; font-size: 13px; color: var(--text-primary); border-bottom: 1px solid var(--border-color);">
+                                        <i class="fas fa-check-circle" style="color: #10b981; margin-top: 3px; font-size: 14px; flex-shrink: 0;"></i>
+                                        <span>Minimum Spanning Tree supports Prim & Kruskal</span>
+                                    </div>
+                                    <div class="notification-item" style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; font-size: 13px; color: var(--text-primary);">
+                                        <i class="fas fa-check-circle" style="color: #10b981; margin-top: 3px; font-size: 14px; flex-shrink: 0;"></i>
+                                        <span>Huffman Coding visualization available</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Mobile navigation dropdown toggle -->
+                    <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle navigation">
+                        <i class="fas fa-ellipsis-v"></i>
                     </button>
                 </div>
             </header>
+            {% endif %}
 
             <main class="content">
                 {% block content %}{% endblock %}
@@ -81,23 +175,266 @@
 
     <script>
         const sidebar = document.getElementById('sidebar');
-        const sidebarToggle = document.getElementById('sidebarToggle');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const sidebarClose = document.getElementById('sidebarClose');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
+        if (sidebar) {
+            function openSidebar() {
+                sidebar.classList.add('open');
+                if (sidebarOverlay) sidebarOverlay.classList.add('active');
+            }
 
-        if (window.innerWidth < 768) {
-            sidebar.classList.add('collapsed');
+            function closeSidebar() {
+                sidebar.classList.remove('open');
+                if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+            }
+
+            if (hamburgerBtn) {
+                hamburgerBtn.addEventListener('click', openSidebar);
+            }
+            if (sidebarClose) {
+                sidebarClose.addEventListener('click', closeSidebar);
+            }
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', closeSidebar);
+            }
+
+            // Keyboard support: Escape key closes sidebar
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeSidebar();
+                }
+            });
         }
 
-        window.addEventListener('resize', () => {
-            if (window.innerWidth < 768) {
-                sidebar.classList.add('collapsed');
-            } else {
-                sidebar.classList.remove('collapsed');
+        // PREMIUM TOP NAV CONTROLLERS
+        document.addEventListener('DOMContentLoaded', () => {
+            // Algorithms dropdown toggle (click support for mobile/touch)
+            const algosDropdown = document.getElementById('algosDropdown');
+            if (algosDropdown) {
+                const trigger = algosDropdown.querySelector('.dropdown-trigger');
+                if (trigger) {
+                    trigger.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        algosDropdown.classList.toggle('show');
+                    });
+                    document.addEventListener('click', (e) => {
+                        if (!algosDropdown.contains(e.target)) {
+                            algosDropdown.classList.remove('show');
+                        }
+                    });
+                }
+            }
+
+
+            // Mobile Nav dropdown toggle
+            const navToggle = document.getElementById('navToggle');
+            const headerNav = document.getElementById('headerNav');
+            if (navToggle && headerNav) {
+                navToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    headerNav.classList.toggle('open');
+                });
+                document.addEventListener('click', (e) => {
+                    if (headerNav.classList.contains('open') && !headerNav.contains(e.target) && e.target !== navToggle) {
+                        headerNav.classList.remove('open');
+                    }
+                });
+            }
+
+            // Theme toggle
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            if (themeToggleBtn) {
+                const currentIcon = themeToggleBtn.querySelector('i');
+                if (document.body.classList.contains('light-mode-preview')) {
+                    currentIcon.classList.replace('fa-moon', 'fa-sun');
+                }
+                themeToggleBtn.addEventListener('click', () => {
+                    if (currentIcon.classList.contains('fa-moon')) {
+                        currentIcon.classList.replace('fa-moon', 'fa-sun');
+                        document.body.classList.add('light-mode-preview');
+                        localStorage.setItem('theme', 'light');
+                        showToast("Light mode preview enabled!", "info");
+                    } else {
+                        currentIcon.classList.replace('fa-sun', 'fa-moon');
+                        document.body.classList.remove('light-mode-preview');
+                        localStorage.setItem('theme', 'dark');
+                        showToast("Dark premium theme restored.", "success");
+                    }
+                });
+            }
+
+            // Notification toggle
+            const notificationBtn = document.getElementById('notificationBtn');
+            const notificationMenu = document.getElementById('notificationMenu');
+            if (notificationBtn && notificationMenu) {
+                notificationBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    notificationMenu.classList.toggle('show');
+                    const badge = notificationBtn.querySelector('.notification-badge');
+                    if (badge) badge.style.display = 'none';
+                });
+                document.addEventListener('click', (e) => {
+                    if (!notificationMenu.contains(e.target) && e.target !== notificationBtn) {
+                        notificationMenu.classList.remove('show');
+                    }
+                });
+            }
+
+            // Toast notification function
+            function showToast(message, type = 'info') {
+                let container = document.getElementById('toast-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'toast-container';
+                    container.style.position = 'fixed';
+                    container.style.top = '98px';
+                    container.style.right = '24px';
+                    container.style.zIndex = '99999';
+                    container.style.display = 'flex';
+                    container.style.flexDirection = 'column';
+                    container.style.gap = '10px';
+                    document.body.appendChild(container);
+                }
+
+                const toast = document.createElement('div');
+                toast.className = `toast-notification ${type}`;
+                toast.style.background = 'rgba(11, 18, 40, 0.9)';
+                toast.style.border = '1px solid rgba(255, 255, 255, 0.08)';
+                toast.style.color = '#ffffff';
+                toast.style.padding = '12px 20px';
+                toast.style.borderRadius = '10px';
+                toast.style.fontSize = '13px';
+                toast.style.display = 'flex';
+                toast.style.alignItems = 'center';
+                toast.style.gap = '10px';
+                toast.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.3)';
+                toast.style.backdropFilter = 'blur(10px)';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-10px)';
+                toast.style.transition = 'all 0.3s ease';
+
+                let iconClass = 'fa-info-circle';
+                let iconColor = '#60a5fa';
+                if (type === 'success') {
+                    iconClass = 'fa-check-circle';
+                    iconColor = '#10b981';
+                }
+
+                toast.innerHTML = `<i class="fas ${iconClass}" style="color: ${iconColor};"></i> <span>${message}</span>`;
+                container.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.opacity = '1';
+                    toast.style.transform = 'translateY(0)';
+                }, 50);
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-10px)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            // Search bar functionality
+            const searchInput = document.getElementById('headerSearchInput');
+            const searchDropdown = document.getElementById('headerSearchDropdown');
+            if (searchInput && searchDropdown) {
+                const pages = [
+                    { name: "Graph Coloring", url: "/graph-coloring" },
+                    { name: "Minimum Spanning Tree", url: "/mst" },
+                    { name: "Huffman Coding", url: "/huffman" },
+                    { name: "Dashboard", url: "/dashboard" },
+                    { name: "About", url: "/about" }
+                ];
+                let activeIndex = -1;
+
+                function renderDropdown(matches) {
+                    searchDropdown.innerHTML = '';
+                    if (matches.length === 0) {
+                        const noResults = document.createElement('div');
+                        noResults.className = 'search-no-results';
+                        noResults.textContent = 'No matching page found.';
+                        searchDropdown.appendChild(noResults);
+                    } else {
+                        matches.forEach((page, index) => {
+                            const item = document.createElement('a');
+                            item.className = 'search-result-item';
+                            if (index === activeIndex) {
+                                item.classList.add('active');
+                            }
+                            item.href = page.url;
+                            item.textContent = page.name;
+                            item.addEventListener('click', (e) => {
+                                window.location.href = page.url;
+                            });
+                            searchDropdown.appendChild(item);
+                        });
+                    }
+                    searchDropdown.style.display = 'flex';
+                }
+
+                function filterPages() {
+                    const query = searchInput.value.toLowerCase().trim();
+                    if (!query) {
+                        searchDropdown.style.display = 'none';
+                        searchDropdown.innerHTML = '';
+                        activeIndex = -1;
+                        return;
+                    }
+                    const matches = pages.filter(page => page.name.toLowerCase().includes(query));
+                    renderDropdown(matches);
+                }
+
+                searchInput.addEventListener('input', () => {
+                    activeIndex = -1;
+                    filterPages();
+                });
+
+                searchInput.addEventListener('keydown', (e) => {
+                    const query = searchInput.value.toLowerCase().trim();
+                    if (!query) return;
+                    const matches = pages.filter(page => page.name.toLowerCase().includes(query));
+
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        if (matches.length > 0) {
+                            activeIndex = (activeIndex + 1) % matches.length;
+                            renderDropdown(matches);
+                        }
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        if (matches.length > 0) {
+                            activeIndex = (activeIndex - 1 + matches.length) % matches.length;
+                            renderDropdown(matches);
+                        }
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (matches.length > 0) {
+                            const targetIndex = activeIndex >= 0 ? activeIndex : 0;
+                            window.location.href = matches[targetIndex].url;
+                        }
+                    } else if (e.key === 'Escape') {
+                        searchDropdown.style.display = 'none';
+                        searchInput.blur();
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+                        searchDropdown.style.display = 'none';
+                    }
+                });
+
+                searchInput.addEventListener('focus', () => {
+                    filterPages();
+                });
             }
         });
     </script>
+
 </body>
+
 </html>

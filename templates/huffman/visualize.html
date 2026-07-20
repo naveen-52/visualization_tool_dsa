@@ -1,322 +1,992 @@
 {% extends "layout.html" %}
 
-{% block title %}Huffman Animator - AlgoViz Pro{% endblock %}
+{% block title %}Huffman Animator – AlgoViz Pro{% endblock %}
 
 {% block content %}
 <style>
-    .animator-container {
-        max-width: 1000px;
-        margin: 30px auto;
-        padding: 30px;
-        background: #0f172a;
-        border-radius: 12px;
-        border: 1px solid rgba(99,102,241,0.2);
-        color: #f1f5f9;
-        font-family: 'Inter', sans-serif;
-    }
-    .animator-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        padding-bottom: 16px;
-    }
-    .controls {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-    }
-    .btn-ctrl {
-        background: #1e293b;
-        color: #fff;
-        border: 1px solid #475569;
-        padding: 8px 16px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.2s;
-    }
-    .btn-ctrl:hover { background: #334155; }
-    .btn-play { background: #4f46e5; border-color: #6366f1; }
-    .btn-play:hover { background: #4338ca; }
-    .slider { width: 120px; }
-    
-    .status-panel {
-        font-size: 16px;
-        font-weight: bold;
-        color: #38bdf8;
-        background: rgba(56, 189, 248, 0.1);
-        padding: 12px 20px;
-        border-radius: 8px;
-        margin-bottom: 24px;
-    }
+/* ──────────────────────────────────────────────────
+   DESIGN TOKENS  (scoped to this page)
+   ────────────────────────────────────────────────── */
+:root {
+    --hv-panel:   #111827;
+    --hv-inset:   #0a0e18;
+    --hv-border:  rgba(255,255,255,0.07);
+    --hv-indigo:  #6366f1;
+    --hv-cyan:    #22d3ee;
+    --hv-green:   #34d399;
+    --hv-red:     #ef4444;
+    --hv-amber:   #fbbf24;
+    --hv-t1:      #f1f5f9;
+    --hv-t2:      #94a3b8;
+    --hv-t3:      #475569;
+}
 
-    .section-title {
-        font-size: 14px;
-        text-transform: uppercase;
-        color: #94a3b8;
-        margin-bottom: 12px;
-        letter-spacing: 1px;
-    }
+body.light-mode-preview {
+    --hv-panel:   #ffffff;
+    --hv-inset:   #f8fafc;
+    --hv-border:  #e2e8f0;
+    --hv-indigo:  #2563eb;
+    --hv-cyan:    #0ea5e9;
+    --hv-green:   #10b981;
+    --hv-red:     #ef4444;
+    --hv-amber:   #f59e0b;
+    --hv-t1:      #0f172a;
+    --hv-t2:      #475569;
+    --hv-t3:      #cbd5e1;
+}
 
-    .queue-area {
-        min-height: 100px;
-        background: #1e293b;
-        border-radius: 10px;
-        padding: 20px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-        margin-bottom: 30px;
-        border: 1px dashed rgba(255,255,255,0.1);
-    }
-    
-    .tree-area {
-        min-height: 250px;
-        background: #1e293b;
-        border-radius: 10px;
-        padding: 30px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        border: 1px dashed rgba(255,255,255,0.1);
-    }
+body.light-mode-preview .vb-btn {
+    background: rgba(0, 0, 0, 0.04) !important;
+}
+body.light-mode-preview .vb-btn:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.08) !important;
+}
 
-    .h-node {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        background: #3b82f6;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        color: white;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        transition: all 0.4s ease;
-        position: relative;
-        flex-shrink: 0;
-    }
-    .h-node.selected {
-        background: #ef4444; /* REQUIRED: RED SELECTION */
-        box-shadow: 0 0 16px #ef4444;
-        transform: scale(1.1);
-    }
-    .h-node.merged {
-        background: #10b981;
-    }
-    .n-char { font-size: 16px; }
-    .n-freq { font-size: 11px; color: rgba(255,255,255,0.8); margin-top:2px; }
+/* ──────────────────────────────────────────────────
+   PAGE WRAPPER
+   ────────────────────────────────────────────────── */
+.viz-page {
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    width:100%;
+    max-width:100%;
+    padding-bottom:48px;
+}
+/* ──────────────────────────────────────────────────
+   CONTROL BAR
+   ────────────────────────────────────────────────── */
+.viz-bar {
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    background:var(--hv-panel); border:1px solid var(--hv-border);
+    border-radius:12px; padding:12px 18px;
+}
+.viz-bar-title { font-size:15px; font-weight:700; color:var(--hv-t1); margin-right:auto; }
+.vb-btn {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:7px 16px; font-size:13px; font-weight:600;
+    font-family:'Inter',sans-serif;
+    border-radius:8px; border:1px solid var(--hv-border);
+    background:rgba(255,255,255,0.04); color:var(--hv-t2);
+    cursor:pointer; transition:all 0.18s; text-decoration:none;
+}
+.vb-btn:hover:not(:disabled) { background:rgba(255,255,255,0.08); color:var(--hv-t1); }
+.vb-btn:disabled { opacity:0.3; cursor:not-allowed; }
+.vb-btn.accent { background:var(--hv-indigo); border-color:var(--hv-indigo); color:#fff; }
+.vb-btn.accent:hover:not(:disabled) { background:#818cf8; border-color:#818cf8; }
+.vb-speed { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--hv-t3); }
+.vb-speed input[type=range] { width:96px; accent-color:var(--hv-indigo); cursor:pointer; }
+.vb-counter { font-size:12px; color:var(--hv-t3); min-width:56px; text-align:right;
+              font-variant-numeric:tabular-nums; }
 
-    .merge-visual {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        animation: fadeIn 0.4s ease;
-    }
-    .merge-children {
-        display: flex;
-        gap: 40px;
-        margin-top: 30px;
-        position: relative;
-    }
-    .merge-children::before {
-        content: "";
-        position: absolute;
-        top: -30px;
-        left: 28px;
-        right: 28px;
-        height: 30px;
-        border-top: 2px solid rgba(255,255,255,0.3);
-        border-left: 2px solid rgba(255,255,255,0.3);
-        border-right: 2px solid rgba(255,255,255,0.3);
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
-    }
+/* ──────────────────────────────────────────────────
+   STATUS BAR
+   ────────────────────────────────────────────────── */
+.viz-status {
+    display:flex; align-items:center; gap:12px;
+    background:var(--hv-panel); border:1px solid var(--hv-border);
+    border-radius:10px; padding:11px 18px; font-size:13px;
+}
+.vs-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:10px; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase; padding:3px 10px; border-radius:20px;
+    white-space:nowrap; flex-shrink:0;
+}
+.vs-badge.init   { color:var(--hv-cyan);   background:rgba(34,211,238,.12);  border:1px solid rgba(34,211,238,.3); }
+.vs-badge.select { color:var(--hv-red);    background:rgba(239,68,68,.12);   border:1px solid rgba(239,68,68,.3);  }
+.vs-badge.merge  { color:var(--hv-green);  background:rgba(52,211,153,.12);  border:1px solid rgba(52,211,153,.3); }
+.vs-badge.insert { color:var(--hv-indigo); background:rgba(99,102,241,.12);  border:1px solid rgba(99,102,241,.3); }
+.vs-badge.ready  { color:var(--hv-amber);  background:rgba(251,191,36,.12);  border:1px solid rgba(251,191,36,.3); }
+.vs-badge.done   { color:var(--hv-green);  background:rgba(52,211,153,.12);  border:1px solid rgba(52,211,153,.3); }
+.vs-sep  { color:var(--hv-border); }
+.vs-msg  { color:var(--hv-t2); font-size:13px; }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+/* ──────────────────────────────────────────────────
+   MAIN CANVAS SHELL
+   ────────────────────────────────────────────────── */
+.viz-shell {
+    width:100%;
+    background:var(--hv-panel);
+    border:1px solid var(--hv-border);
+    border-radius:12px;
+    overflow:hidden;
+}
+
+/* Single absolutely-positioned canvas — all nodes live here */
+.hv-canvas {
+    position:relative;
+    width:100%;
+    min-height:480px;      /* grows dynamically */
+    overflow:hidden;
+}
+
+/* ──────────────────────────────────────────────────
+   ZONE HEADER BARS (absolutely positioned in canvas)
+   ────────────────────────────────────────────────── */
+.zone-bar {
+    position:absolute; left:0; right:0;
+    display:flex; align-items:center; gap:10px;
+    padding:0 20px; pointer-events:none; z-index:3;
+}
+.zone-bar span {
+    font-size:10px; font-weight:600; letter-spacing:0.08em;
+    text-transform:uppercase; white-space:nowrap;
+    color:var(--hv-t3);
+}
+.zone-bar .zbl { flex:1; height:1px; background:var(--hv-border); }
+
+/* ──────────────────────────────────────────────────
+   SVG EDGE LAYER
+   ────────────────────────────────────────────────── */
+.hv-svg {
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    pointer-events:none; z-index:1; overflow:visible;
+}
+.tree-edge {
+    stroke:rgba(99,102,241,0.4);
+    stroke-width:2; stroke-linecap:round;
+    transition: stroke 0.3s;
+}
+.edge-lbl {
+    fill:var(--hv-t3); font-size:10px;
+    font-family:monospace; font-weight:700;
+}
+
+/* ──────────────────────────────────────────────────
+   NODE ELEMENTS
+   Key design: position:absolute + transition on left/top
+   This is the entire animation system.
+   ────────────────────────────────────────────────── */
+.hv-node {
+    position:absolute; z-index:10;
+    width:56px; height:56px; border-radius:50%;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    font-family:'Inter',sans-serif;
+    cursor:default; user-select:none;
+
+    /* Queue state (default) */
+    background:#1e3a5f;
+    border:2px solid #3b82f6;
+    box-shadow:0 2px 10px rgba(59,130,246,0.25);
+
+    /*
+     * THE ANIMATION ENGINE:
+     * Moving a node between queue and tree is just changing left/top.
+     * CSS handles interpolation — no JS animation loop needed.
+     */
+    transition:
+        left    0.45s cubic-bezier(.4,0,.2,1),
+        top     0.45s cubic-bezier(.4,0,.2,1),
+        opacity 0.25s ease,
+        transform   0.25s ease,
+        background  0.2s,
+        border-color 0.2s,
+        box-shadow  0.2s;
+}
+.hv-node .nv-char { font-size:15px; font-weight:700; color:#e2e8f0; line-height:1; }
+.hv-node .nv-freq { font-size:10px; color:rgba(255,255,255,0.5); margin-top:2px;
+                    font-variant-numeric:tabular-nums; }
+
+/* ── Node state variants ── */
+.hv-node.s-selected {
+    background:#450a0a; border-color:var(--hv-red);
+    box-shadow:0 0 22px rgba(239,68,68,0.55);
+    transform:scale(1.12) !important; z-index:15;
+}
+.hv-node.s-tree {
+    background:#0a221a; border-color:var(--hv-green);
+    box-shadow:0 2px 12px rgba(52,211,153,0.2);
+}
+.hv-node.s-merged {
+    background:#14103a; border-color:var(--hv-indigo);
+    box-shadow:0 0 18px rgba(99,102,241,0.45);
+}
+.hv-node.s-root {
+    background:#1a1202; border-color:var(--hv-amber);
+    box-shadow:0 0 22px rgba(251,191,36,0.45);
+}
+
+/* Disable transitions during fast backward replay */
+.hv-canvas.no-anim .hv-node {
+    transition:none !important;
+}
 </style>
 
-<div class="animator-container">
-    <div style="margin-bottom: 20px;">
-        <a href="/huffman" class="btn-ctrl" style="text-decoration:none;">← Back</a>
+<div class="viz-page">
+
+    <!-- ── CONTROL BAR ──────────────────────────────── -->
+    <div class="viz-bar">
+        <a href="/huffman" class="vb-btn" id="vb-back">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+        <span class="viz-bar-title">Huffman Step Animator</span>
+
+        <button class="vb-btn" id="btn-prev" disabled>
+            <i class="fas fa-step-backward"></i> Prev
+        </button>
+        <button class="vb-btn accent" id="btn-play">
+            <i class="fas fa-play"></i> Play
+        </button>
+        <button class="vb-btn accent" id="btn-pause" style="display:none;">
+            <i class="fas fa-pause"></i> Pause
+        </button>
+        <button class="vb-btn" id="btn-next" disabled>
+            <i class="fas fa-step-forward"></i> Next
+        </button>
+
+        <div class="vb-speed">
+            <i class="fas fa-gauge-high" style="font-size:10px;"></i>
+            Speed
+            <input type="range" id="speed-slider" min="300" max="2500" value="1000" dir="rtl">
+        </div>
+        <span class="vb-counter" id="step-counter">— / —</span>
     </div>
 
-    <div class="animator-header">
-        <h2 style="margin:0;">Interactive Visualizer</h2>
-        <div class="controls">
-            <button class="btn-ctrl" id="btn_prev">⏮ Prev</button>
-            <button class="btn-ctrl btn-play" id="btn_play">▶ Play</button>
-            <button class="btn-ctrl btn-play" id="btn_pause" style="display:none;">⏸ Pause</button>
-            <button class="btn-ctrl" id="btn_next">Next ⏭</button>
-            <div style="color: #94a3b8; font-size:14px; margin-left: 10px;">
-                Speed: <input type="range" id="speed" class="slider" min="200" max="2500" value="1000" dir="rtl">
+    <!-- ── STATUS BAR ───────────────────────────────── -->
+    <div class="viz-status">
+        <span class="vs-badge ready" id="vs-badge">
+            <i class="fas fa-circle-notch"></i> Ready
+        </span>
+        <span class="vs-sep">|</span>
+        <span class="vs-msg" id="vs-msg">
+            Go back to the Huffman page, enter text and click "Animate Step-by-Step".
+        </span>
+    </div>
+
+    <!-- ── MAIN CANVAS ──────────────────────────────── -->
+    <div class="viz-shell">
+        <div class="hv-canvas" id="hv-canvas">
+
+            <!-- SVG for tree edges — cleared/redrawn on each merge -->
+            <svg class="hv-svg" id="hv-svg"></svg>
+
+            <!-- Zone label: Priority Queue (pinned near top) -->
+            <div class="zone-bar" id="zb-queue" style="top:8px;">
+                <span>Priority Queue</span>
+                <div class="zbl"></div>
             </div>
+
+            <!-- Zone label: Huffman Tree (repositioned by JS) -->
+            <div class="zone-bar" id="zb-tree">
+                <div class="zbl"></div>
+                <span>Huffman Tree</span>
+                <div class="zbl"></div>
+            </div>
+
+            <!--
+                All .hv-node divs are appended here by JS.
+                They are NEVER removed — only repositioned and restyled.
+                Moving between queue row and tree is handled by changing
+                left/top; CSS transition animates the movement.
+            -->
         </div>
     </div>
 
-    <div class="status-panel" id="status_text">
-        Ready to visualize. Press Play to start!
-    </div>
-
-    <div class="section-title">Priority Queue</div>
-    <div class="queue-area" id="queue_area"></div>
-
-    <div class="section-title">Merge Actions</div>
-    <div class="tree-area" id="tree_area">
-        <div style="color:#64748b;">Merges will happen here</div>
-    </div>
 </div>
 
 <script>
-    const stepsData = JSON.parse(localStorage.getItem('huffman_steps') || '[]');
-    let currentStep = -1;
-    let playing = false;
-    let timer = null;
+(function () {
+'use strict';
 
-    const uiQueue = document.getElementById('queue_area');
-    const uiTree = document.getElementById('tree_area');
-    const uiStatus = document.getElementById('status_text');
+/* ══════════════════════════════════════════════════════
+   LAYOUT CONSTANTS
+   All units are pixels.  Nodes are 56×56 circles (r=28).
+   ══════════════════════════════════════════════════════ */
+const NODE_R        = 28;   // node radius
+const NODE_D        = 56;   // node diameter
+const QUEUE_CY      = 52;   // center-Y of queue zone
+const TREE_START_Y  = 128;  // Y where tree level-0 begins
+const TREE_LEVEL_H  = 88;   // vertical gap between tree levels
+const TREE_X_GAP    = 68;   // minimum horizontal gap between tree nodes
+const QUEUE_PADDING = 20;   // left/right padding inside queue zone
 
-    function createNodeNode(n, isSelected = false, isMerged = false) {
-        const div = document.createElement('div');
-        div.className = 'h-node';
-        if(isSelected) div.classList.add('selected');
-        if(isMerged) div.classList.add('merged');
+// Mini-subtree layout constants
+const SUBTREE_SCALE   = 0.6;
+const SUBTREE_X_GAP   = 36;
+const SUBTREE_LEVEL_H = 32;
+
+/* Cached layout parameters — set by renderTree(), reused by insert-step drawEdges.
+ * This guarantees edges are drawn with the EXACT same xOff as the node divs,
+ * even if canvas.offsetWidth changes between the two calls (e.g., after
+ * canvas.style.minHeight is updated). */
+let _treeXOff  = 0;
+let _treeXSpac = TREE_X_GAP + 12;
+
+/* ══════════════════════════════════════════════════════
+   STEP DATA  (written by index.html before redirect)
+   ══════════════════════════════════════════════════════ */
+const stepsData = (() => {
+    try { return JSON.parse(localStorage.getItem('huffman_steps') || '[]'); }
+    catch (_) { return []; }
+})();
+
+let currentStep      = -1;
+let playing          = false;
+let timer            = null;
+let finalStepTimeout = null;
+
+/* ══════════════════════════════════════════════════════
+   CORE STATE
+
+   registry   — Map<nodeId, {el}>
+                One entry per unique node.  NEVER deleted.
+                The DOM element is created once and only
+                repositioned / restyled thereafter.
+
+   treeNodes  — Object<nodeId, {id,char,freq,leftId?,rightId?}>
+                Builds up as merges happen.  Cleared only
+                during backward replay (replayTo).
+
+   nodePositions — Object<nodeId, {cx,cy,scale}>
+                Tracks absolute center coordinates and scale
+                of every active node to draw correct edges.
+   ══════════════════════════════════════════════════════ */
+const registry      = new Map();
+const treeNodes     = {};
+const nodePositions = {};
+
+/* ══════════════════════════════════════════════════════
+   DOM REFS
+   ══════════════════════════════════════════════════════ */
+const canvas      = document.getElementById('hv-canvas');
+const svgEl       = document.getElementById('hv-svg');
+const zbTree      = document.getElementById('zb-tree');
+const vsBadge     = document.getElementById('vs-badge');
+const vsMsg       = document.getElementById('vs-msg');
+const stepCounter = document.getElementById('step-counter');
+const btnPrev     = document.getElementById('btn-prev');
+const btnPlay     = document.getElementById('btn-play');
+const btnPause    = document.getElementById('btn-pause');
+const btnNext     = document.getElementById('btn-next');
+const speedSlider = document.getElementById('speed-slider');
+
+/* ══════════════════════════════════════════════════════
+   NODE FACTORY
+   Creates the DOM element once and appends it to canvas.
+   Born invisible at queue-row Y; caller shows/positions it.
+   ══════════════════════════════════════════════════════ */
+function createNodeEl(n) {
+    const el = document.createElement('div');
+    el.className = 'hv-node';
+    el.id = 'hvn-' + n.id;
+
+    const ch = (n.char === null || n.char === undefined) ? '∗'
+             : n.char === ' ' ? '␣' : n.char;
+
+    el.innerHTML =
+        `<div class="nv-char">${ch}</div>` +
+        `<div class="nv-freq">${n.freq}</div>`;
+
+    /* Born invisible at queue-row centre, top-left origin */
+    el.style.left      = '0px';
+    el.style.top       = (QUEUE_CY - NODE_R) + 'px';
+    el.style.opacity   = '0';
+    el.style.transform = 'scale(0.5)';
+
+    canvas.appendChild(el);
+    registry.set(n.id, { el });
+    return el;
+}
+
+/** Return existing registry entry, creating the node if absent. */
+function getOrCreate(n) {
+    if (!registry.has(n.id)) createNodeEl(n);
+    return registry.get(n.id);
+}
+
+/* ══════════════════════════════════════════════════════
+   NODE MANIPULATION PRIMITIVES
+   These are the ONLY functions that touch node DOM state.
+   All animation is driven by CSS transition on left/top.
+   ══════════════════════════════════════════════════════ */
+
+/**
+ * Reposition a node.  x,y = TOP-LEFT corner of the 56×56 box.
+ * CSS transition fires automatically — no JS animation loop needed.
+ */
+function moveNode(id, x, y) {
+    const e = registry.get(id);
+    if (!e) return;
+    e.el.style.left = x + 'px';
+    e.el.style.top  = y + 'px';
+}
+
+/** Fade a node fully visible. */
+function showNode(id) {
+    const e = registry.get(id);
+    if (!e) return;
+    e.el.style.opacity   = '1';
+    e.el.style.transform = 'scale(1)';
+}
+
+/** Fade a node out (keeps it in DOM for back-stepping). */
+function hideNode(id) {
+    const e = registry.get(id);
+    if (!e) return;
+    e.el.style.opacity   = '0';
+    e.el.style.transform = 'scale(0.4)';
+}
+
+/**
+ * Apply a visual-state class.
+ * Clears all state classes then adds the new one.
+ * State → CSS class  →  colour
+ *   queue    → (default blue)
+ *   selected → red glow + scale
+ *   tree     → green
+ *   merged   → indigo glow  (partial-tree root currently in queue)
+ *   root     → amber glow   (final Huffman root)
+ */
+function applyState(id, state) {
+    const e = registry.get(id);
+    if (!e) return;
+    e.el.className = 'hv-node' + (state ? ' s-' + state : '');
+}
+
+/* ══════════════════════════════════════════════════════
+   SUBTREE LAYOUT HELPERS
+   ══════════════════════════════════════════════════════ */
+
+function getSubtreeLayout(rootId) {
+    const pos = {};
+    const leafCtr = { x: 0 };
+    
+    function assignLocalCols(id, depth) {
+        const n = treeNodes[id];
+        if (!n) return;
         
-        const displayChar = n.char === null || n.char === undefined ? '*' : (n.char === ' ' ? 'Spc' : n.char);
-        div.innerHTML = `<div class="n-char">${displayChar}</div><div class="n-freq">${n.freq}</div>`;
-        return div;
-    }
-
-    function renderStep(index) {
-        if (index < 0) {
-            uiStatus.textContent = "Beginning state...";
-            renderInitialElements();
-            uiTree.innerHTML = '<div style="color:#64748b;">Merges will happen here</div>';
+        pos[id] = { depth };
+        
+        const isLeaf = !n.leftId && !n.rightId;
+        if (isLeaf) {
+            pos[id].col = leafCtr.x;
+            leafCtr.x += 1;
             return;
         }
-
-        const step = stepsData[index];
-        const actionLabel = step.action.toUpperCase();
-        uiStatus.textContent = `Step ${index + 1}/${stepsData.length} — Action: ${actionLabel}`;
-
-        // Render remaining queue array
-        uiQueue.innerHTML = '';
-        step.queue.forEach(n => {
-            // Checks if this node exists in 'selected' context 
-            const selected = step.action !== 'insert' && step.selected.some(sn => sn.id === n.id);
-            const merged = step.action === 'insert' && step.result && step.result.id === n.id;
-            uiQueue.appendChild(createNodeNode(n, selected, merged));
-        });
-
-        // Display current tree/merge area
-        uiTree.innerHTML = '';
         
-        if (step.action === 'select') {
-            uiStatus.textContent += ' (Selecting lowest frequencies)';
-            const wrap = document.createElement('div');
-            wrap.style.display = 'flex';
-            wrap.style.gap = '40px';
-            step.selected.forEach(sn => wrap.appendChild(createNodeNode(sn, true)));
-            uiTree.appendChild(wrap);
-        }  else if (step.action === 'merge' || step.action === 'insert') {
-            if(step.action === 'merge') uiStatus.textContent += ' (Merging nodes into sub-tree)';
-            else uiStatus.textContent += ' (Inserting merged sub-tree back to queue)';
-
-            const visual = document.createElement('div');
-            visual.className = 'merge-visual';
-            
-            const parent = createNodeNode(step.result, false, true);
-            visual.appendChild(parent);
-
-            const childrenGrp = document.createElement('div');
-            childrenGrp.className = 'merge-children';
-            step.selected.forEach(sn => childrenGrp.appendChild(createNodeNode(sn)));
-            
-            visual.appendChild(childrenGrp);
-            uiTree.appendChild(visual);
-        }
+        if (n.leftId) assignLocalCols(n.leftId, depth + 1);
+        if (n.rightId) assignLocalCols(n.rightId, depth + 1);
+        
+        const lc = n.leftId && pos[n.leftId] ? pos[n.leftId].col : null;
+        const rc = n.rightId && pos[n.rightId] ? pos[n.rightId].col : null;
+        
+        pos[id].col = (lc !== null && rc !== null) ? (lc + rc) / 2
+                    : (lc !== null) ? lc
+                    : rc;
     }
+    
+    assignLocalCols(rootId, 0);
+    
+    let maxDepth = 0;
+    for (const p of Object.values(pos)) {
+        if (p.depth > maxDepth) maxDepth = p.depth;
+    }
+    
+    return { pos, numLeaves: leafCtr.x, maxDepth };
+}
 
-    function renderInitialElements() {
-        uiQueue.innerHTML = '';
-        if(stepsData.length > 0) {
-            // Compute the real starting queue before select removes the first 2
-            const step0 = stepsData[0];
-            const allNodes = [...step0.queue, ...step0.selected].sort((a,b) => a.freq - b.freq);
-            allNodes.forEach(n => uiQueue.appendChild(createNodeNode(n)));
+/* ══════════════════════════════════════════════════════
+   QUEUE LAYOUT
+   Positions nodeList in a sorted horizontal row at QUEUE_CY.
+   Supports single leaf nodes and scaled-down mini-subtrees.
+   Dynamic spacing ensures items never collide.
+   All node positions and scales are saved to nodePositions.
+   ══════════════════════════════════════════════════════ */
+function layoutQueue(nodeList) {
+    if (!nodeList || nodeList.length === 0) return;
+
+    const W = canvas.offsetWidth || 800;
+    
+    // Map each queue root node to its layout information
+    const itemsInfo = nodeList.map(n => {
+        const isMerged = !!(treeNodes[n.id] && (treeNodes[n.id].leftId || treeNodes[n.id].rightId));
+        if (!isMerged) {
+            return {
+                id: n.id,
+                isMerged: false,
+                width: NODE_D
+            };
         } else {
-            uiQueue.innerHTML = '<div style="color:#64748b;">No data encoded.</div>';
-        }
-    }
-
-    function init() {
-        if(stepsData.length === 0) {
-            uiStatus.textContent = "Error: No step data found. Please encode text via Animator first.";
-            uiQueue.innerHTML = '';
-            uiTree.innerHTML = '';
-            return;
-        }
-        renderStep(-1);
-    }
-
-    function doNext() {
-        if(currentStep < stepsData.length - 1) {
-            currentStep++;
-            renderStep(currentStep);
-        } else {
-            stopAnim();
-            uiStatus.textContent = "Visualization Complete!";
-        }
-    }
-
-    function doPrev() {
-        if(currentStep > -1) {
-            currentStep--;
-            renderStep(currentStep);
-        }
-    }
-
-    function playAnim() {
-        if(stepsData.length === 0) return;
-        if(currentStep >= stepsData.length - 1) {
-            currentStep = -1; // Reset to loop around
-        }
-        
-        playing = true;
-        document.getElementById('btn_play').style.display = 'none';
-        document.getElementById('btn_pause').style.display = 'inline-block';
-        
-        const speed = parseInt(document.getElementById('speed').value);
-        timer = setInterval(doNext, speed);
-    }
-
-    function stopAnim() {
-        playing = false;
-        document.getElementById('btn_play').style.display = 'inline-block';
-        document.getElementById('btn_pause').style.display = 'none';
-        clearInterval(timer);
-    }
-
-    document.getElementById('btn_next').addEventListener('click', () => { stopAnim(); doNext(); });
-    document.getElementById('btn_prev').addEventListener('click', () => { stopAnim(); doPrev(); });
-    document.getElementById('btn_play').addEventListener('click', playAnim);
-    document.getElementById('btn_pause').addEventListener('click', stopAnim);
-
-    document.getElementById('speed').addEventListener('input', () => {
-        if(playing) {
-            stopAnim();
-            playAnim();
+            const layout = getSubtreeLayout(n.id);
+            const width = (layout.numLeaves - 1) * SUBTREE_X_GAP + NODE_D * SUBTREE_SCALE;
+            return {
+                id: n.id,
+                isMerged: true,
+                width: width,
+                layout: layout
+            };
         }
     });
 
-    init();
+    const sumOfWidths = itemsInfo.reduce((acc, item) => acc + item.width, 0);
+    const count = itemsInfo.length;
+    let itemGap = 20;
+    if (count > 1) {
+        const maxPossibleGap = (W - QUEUE_PADDING * 2 - sumOfWidths) / (count - 1);
+        itemGap = Math.max(8, Math.min(30, maxPossibleGap));
+    }
+    const totalW = sumOfWidths + (count - 1) * itemGap;
+    let currentX = Math.max(QUEUE_PADDING, (W - totalW) / 2);
+
+    itemsInfo.forEach(item => {
+        if (!item.isMerged) {
+            const px = currentX + NODE_R;
+            const py = QUEUE_CY;
+            getOrCreate({ id: item.id, ...treeNodes[item.id] });
+            moveNode(item.id, px - NODE_R, py - NODE_R);
+            showNode(item.id);
+            applyState(item.id, 'queue');
+            
+            const el = registry.get(item.id).el;
+            el.style.transform = 'scale(1.0)';
+            
+            nodePositions[item.id] = { cx: px, cy: py, scale: 1.0 };
+            currentX += item.width + itemGap;
+        } else {
+            const layout = item.layout;
+            const rootCenterY = QUEUE_CY - (layout.maxDepth * SUBTREE_LEVEL_H) / 2;
+            
+            Object.keys(layout.pos).forEach(nodeId => {
+                const p = layout.pos[nodeId];
+                const px = currentX + p.col * SUBTREE_X_GAP + NODE_R * SUBTREE_SCALE;
+                const py = rootCenterY + p.depth * SUBTREE_LEVEL_H;
+                
+                getOrCreate({ id: nodeId, ...treeNodes[nodeId] });
+                moveNode(nodeId, px - NODE_R, py - NODE_R);
+                showNode(nodeId);
+                
+                const isNodeLeaf = !treeNodes[nodeId].leftId && !treeNodes[nodeId].rightId;
+                applyState(nodeId, isNodeLeaf ? 'queue' : 'merged');
+                
+                const el = registry.get(nodeId).el;
+                el.style.transform = `scale(${SUBTREE_SCALE})`;
+                
+                nodePositions[nodeId] = { cx: px, cy: py, scale: SUBTREE_SCALE };
+            });
+            currentX += item.width + itemGap;
+        }
+    });
+}
+
+/* ══════════════════════════════════════════════════════
+   TREE LAYOUT
+
+   Uses a simplified version of the Reingold-Tilford approach:
+   1. assignLeafCols  — depth-first, assigns fractional column
+      index to every node (leaves get integer slots, internal
+      nodes sit halfway between their children).
+   2. renderTree      — converts columns → pixel X; repositions
+      every node; updates nodePositions.
+
+   Because nodes are absolutely-positioned and transitions are
+   enabled on left/top, re-layout after each merge produces
+   smooth rebalancing animations with zero extra JS.
+   ══════════════════════════════════════════════════════ */
+
+function assignLeafCols(id, depth, ctr, pos) {
+    const n = treeNodes[id];
+    if (!n) return;
+
+    pos[id] = { depth };
+
+    const isLeaf = !n.leftId && !n.rightId;
+    if (isLeaf) {
+        pos[id].col = ctr.x;
+        ctr.x += 1;
+        return;
+    }
+
+    if (n.leftId)  assignLeafCols(n.leftId,  depth + 1, ctr, pos);
+    if (n.rightId) assignLeafCols(n.rightId, depth + 1, ctr, pos);
+
+    const lc = n.leftId  && pos[n.leftId]  ? pos[n.leftId].col  : null;
+    const rc = n.rightId && pos[n.rightId] ? pos[n.rightId].col : null;
+
+    pos[id].col = (lc !== null && rc !== null) ? (lc + rc) / 2
+               : (lc !== null)                  ? lc
+               :                                  rc;
+}
+
+function findRoot() {
+    const hasParent = new Set();
+    for (const n of Object.values(treeNodes)) {
+        if (n.leftId)  hasParent.add(n.leftId);
+        if (n.rightId) hasParent.add(n.rightId);
+    }
+    // prefer an internal node with no parent
+    return (
+        Object.keys(treeNodes).find(id => treeNodes[id].leftId && !hasParent.has(id)) ||
+        Object.keys(treeNodes).find(id => !hasParent.has(id)) ||
+        null
+    );
+}
+
+function renderTree() {
+    const rootId = findRoot();
+    if (!rootId) return;
+
+    const pos = {};
+    assignLeafCols(rootId, 0, { x: 0 }, pos);
+
+    /* Convert fractional columns → pixel X */
+    const W      = canvas.offsetWidth || 800;
+    const cols   = Object.values(pos).map(p => p.col);
+    const maxCol = Math.max(...cols);
+    const xSpac  = Math.min(TREE_X_GAP + 12, (W - 48) / Math.max(maxCol + 1, 1));
+    const xOff   = (W - maxCol * xSpac) / 2;
+    _treeXOff  = xOff;    // cache for insert step
+    _treeXSpac = xSpac;  // cache for insert step
+
+    /* Grow canvas height to fit the tree */
+    const maxDepth = Math.max(...Object.values(pos).map(p => p.depth));
+    const canvasH  = TREE_START_Y + (maxDepth + 1) * TREE_LEVEL_H + NODE_D + 24;
+    canvas.style.minHeight = canvasH + 'px';
+    svgEl.setAttribute('height', canvasH);
+
+    /* Reposition the tree-zone label */
+    zbTree.style.top = (TREE_START_Y - 22) + 'px';
+
+    /* Move every tree node to its computed position */
+    for (const [id, p] of Object.entries(pos)) {
+        const px = xOff + p.col * xSpac;        // center-X of node
+        const py = TREE_START_Y + p.depth * TREE_LEVEL_H; // top-Y
+        getOrCreate(treeNodes[id]);
+        moveNode(id, px - NODE_R, py);
+        showNode(id);
+        
+        // Reset scale to 1.0 for tree nodes
+        const el = registry.get(id).el;
+        el.style.transform = 'scale(1.0)';
+        
+        /* Root of the current partial tree → merged (indigo) */
+        applyState(id, id === rootId ? 'merged' : 'tree');
+        
+        nodePositions[id] = { cx: px, cy: py + NODE_R, scale: 1.0 };
+    }
+}
+
+/* ══════════════════════════════════════════════════════
+   UNIFIED EDGE DRAWING
+   Draws parent-child edges dynamically based on nodePositions.
+   Correctly adjusts for node scales, positioning line endpoints
+   at the visual boundary of each circle.
+   ══════════════════════════════════════════════════════ */
+function drawAllEdges() {
+    svgEl.innerHTML = '';
+    const frag = document.createDocumentFragment();
+
+    for (const [id, node] of Object.entries(treeNodes)) {
+        const parentPos = nodePositions[id];
+        if (!parentPos) continue;
+
+        const px = parentPos.cx;
+        const py = parentPos.cy;
+        const s_p = parentPos.scale;
+
+        for (const [childId, edgeLbl] of [[node.leftId, '0'], [node.rightId, '1']]) {
+            const childPos = nodePositions[childId];
+            if (!childPos) continue;
+
+            const cx = childPos.cx;
+            const cy = childPos.cy;
+            const s_c = childPos.scale;
+
+            // Draw line from parent visual bottom to child visual top
+            const parentBottomY = py + NODE_R * s_p;
+            const childTopY     = cy - NODE_R * s_c;
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', px);
+            line.setAttribute('y1', parentBottomY);
+            line.setAttribute('x2', cx);
+            line.setAttribute('y2', childTopY);
+            line.setAttribute('class', 'tree-edge');
+            frag.appendChild(line);
+
+            /* Edge label (0 = left branch, 1 = right branch) */
+            const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            const xOffset = cx > px ? -12 * s_p : 4 * s_p;
+            txt.setAttribute('x', ((px + cx) / 2) + xOffset);
+            txt.setAttribute('y', (parentBottomY + childTopY) / 2 + 4);
+            txt.setAttribute('class', 'edge-lbl');
+            txt.style.fontSize = `${10 * Math.max(0.7, s_p)}px`;
+            txt.textContent = edgeLbl;
+            frag.appendChild(txt);
+        }
+    }
+
+    svgEl.appendChild(frag);
+}
+
+/* ══════════════════════════════════════════════════════
+   STATUS BAR
+   ══════════════════════════════════════════════════════ */
+const STATUS_META = {
+    ready:  { icon:'fa-circle-notch', msg:'Press Play or Next to start the step-by-step animation.' },
+    init:   { icon:'fa-layer-group',  msg:'Initial priority queue built from character frequencies, sorted lowest first.' },
+    select: { icon:'fa-hand-pointer', msg:'The two lowest-frequency nodes are selected (red) for merging.' },
+    merge:  { icon:'fa-code-branch',  msg:'Selected nodes are merged into a new internal node. The tree grows.' },
+    insert: { icon:'fa-right-to-bracket', msg:'Merged node (indigo) re-inserted into the priority queue in sorted order.' },
+    done:   { icon:'fa-check-circle', msg:'Huffman tree complete! Every character has an optimal, prefix-free binary code.' },
+};
+
+function updateStatus(action) {
+    const m = STATUS_META[action] || STATUS_META.ready;
+    vsBadge.className = `vs-badge ${action}`;
+    vsBadge.innerHTML = `<i class="fas ${m.icon}"></i> ${action.toUpperCase()}`;
+    vsMsg.textContent  = m.msg;
+}
+
+/* ══════════════════════════════════════════════════════
+   RENDER STEP
+   The main entry point called for every step change.
+
+   DOES NOT:  clear canvas, remove nodes, use innerHTML on canvas
+   DOES:      call moveNode / applyState / showNode / hideNode
+              and the two layout helpers (layoutQueue / renderTree)
+   ══════════════════════════════════════════════════════ */
+function renderStep(index) {
+    if (finalStepTimeout) {
+        clearTimeout(finalStepTimeout);
+        finalStepTimeout = null;
+    }
+    /* ── Pre-animation state (index = -1) ─────────────── */
+    if (index < 0) {
+        stepCounter.textContent = `0 / ${stepsData.length}`;
+        updateStatus('ready');
+
+        /* Show the initial queue snapshot if first step is 'init' */
+        if (stepsData.length && stepsData[0].action === 'init') {
+            stepsData[0].queue.forEach(n => {
+                treeNodes[n.id] = treeNodes[n.id] || { ...n };
+            });
+            layoutQueue(stepsData[0].queue);
+            drawAllEdges();
+        }
+        return;
+    }
+
+    const step = stepsData[index];
+    stepCounter.textContent = `${index + 1} / ${stepsData.length}`;
+    updateStatus(step.action);
+
+    switch (step.action) {
+
+        /* ── INIT ─────────────────────────────────────── */
+        case 'init': {
+            step.queue.forEach(n => {
+                treeNodes[n.id] = treeNodes[n.id] || { ...n };
+            });
+            layoutQueue(step.queue);
+            break;
+        }
+
+        /* ── SELECT ───────────────────────────────────── */
+        case 'select': {
+            /*
+             * Layout only the remaining queue (selected pair absent).
+             * The selected nodes keep their CURRENT left/top from the
+               previous layoutQueue call — no moveNode needed.
+             * Only their state class changes to 'selected'.
+             */
+            layoutQueue(step.queue);
+
+            step.selected.forEach(n => {
+                getOrCreate(n);
+                showNode(n.id);
+                applyState(n.id, 'selected');
+            });
+            break;
+        }
+
+        /* ── MERGE ────────────────────────────────────── */
+        case 'merge': {
+            const parent = step.result;
+
+            /*
+             * Register the new parent in treeNodes.
+             * selected[0] becomes leftId, selected[1] becomes rightId.
+             */
+            treeNodes[parent.id] = {
+                ...parent,
+                leftId:  step.selected[0]?.id,
+                rightId: step.selected[1]?.id,
+            };
+
+            /* Ensure children exist in treeNodes */
+            step.selected.forEach(n => {
+                treeNodes[n.id] = treeNodes[n.id] || { ...n };
+            });
+
+            /*
+             * Re-layout the entire tree.
+             * Selected nodes were at QUEUE_CY; renderTree now assigns them
+             * tree positions → they slide DOWN with CSS transition.
+             * The new parent appears at its tree position above them.
+             */
+            renderTree();
+            break;
+        }
+
+        /* ── INSERT ───────────────────────────────────── */
+        case 'insert': {
+            /*
+             * The merged parent re-enters the queue.
+             * step.queue already contains it, so layoutQueue will move it
+             * back UP from its tree position to QUEUE_CY → CSS transition
+             * slides it upward smoothly.
+             * Children remain at their tree positions unchanged.
+             */
+            layoutQueue(step.queue);
+
+            /* Override the merged parent's state to 'merged' (indigo glow)
+               so it's visually distinct from plain leaf nodes. */
+            if (step.result && step.result.id) {
+                applyState(step.result.id, 'merged');
+            }
+            break;
+        }
+    }
+
+    // At the end of renderStep, draw all edges
+    drawAllEdges();
+
+    /* ── Final step decoration ──────────────────────── */
+    if (index === stepsData.length - 1) {
+        updateStatus('done');
+        const rootId = findRoot();
+        if (rootId) {
+            if (canvas.classList.contains('no-anim')) {
+                renderTree();
+                applyState(rootId, 'root');
+                drawAllEdges();
+            } else {
+                const speed = parseInt(speedSlider.value) || 1000;
+                finalStepTimeout = setTimeout(() => {
+                    if (currentStep === index) {
+                        renderTree();
+                        applyState(rootId, 'root');
+                        drawAllEdges();
+                    }
+                }, Math.max(200, speed * 0.45));
+            }
+        }
+    }
+}
+
+/* ══════════════════════════════════════════════════════
+   BACKWARD REPLAY
+
+   Going backwards is inherently a "replay from zero" problem
+   because node states accumulate.  Strategy:
+     1. Hide all nodes (opacity → 0, no class)
+     2. Clear treeNodes
+     3. Clear SVG edges
+     4. Disable transitions (canvas.no-anim)
+     5. Re-run renderStep for every step 0..target (instant)
+     6. Re-enable transitions after next paint
+
+   The user sees the correct state without visible intermediate frames.
+   ══════════════════════════════════════════════════════ */
+function replayTo(target) {
+    /* Reset all node visuals WITHOUT removing elements */
+    registry.forEach(({ el }) => {
+        el.style.opacity   = '0';
+        el.style.transform = 'scale(0.4)';
+        el.className       = 'hv-node';
+    });
+
+    /* Clear tree structure and SVG */
+    Object.keys(treeNodes).forEach(k => delete treeNodes[k]);
+    Object.keys(nodePositions).forEach(k => delete nodePositions[k]);
+    svgEl.innerHTML = '';
+
+    /* Freeze transitions for the fast-forward replay */
+    canvas.classList.add('no-anim');
+
+    /* Re-run all steps synchronously up to target */
+    for (let i = -1; i <= target; i++) renderStep(i);
+
+    /* Re-enable transitions after next paint so future steps animate */
+    requestAnimationFrame(() => canvas.classList.remove('no-anim'));
+}
+
+/* ══════════════════════════════════════════════════════
+   PLAYBACK CONTROL
+   ══════════════════════════════════════════════════════ */
+function syncButtons() {
+    btnPrev.disabled = currentStep <= -1;
+    btnNext.disabled = currentStep >= stepsData.length - 1;
+}
+
+function doNext() {
+    if (currentStep < stepsData.length - 1) {
+        currentStep++;
+        renderStep(currentStep);
+        syncButtons();
+    } else {
+        stopPlay();
+        updateStatus('done');
+    }
+}
+
+function doPrev() {
+    if (currentStep > -1) {
+        stopPlay();
+        currentStep--;
+        replayTo(currentStep);
+        syncButtons();
+    }
+}
+
+function startPlay() {
+    if (!stepsData.length) return;
+    if (currentStep >= stepsData.length - 1) {
+        replayTo(-1);
+        currentStep = -1;
+    }
+    playing = true;
+    btnPlay.style.display  = 'none';
+    btnPause.style.display = 'inline-flex';
+    timer = setInterval(doNext, parseInt(speedSlider.value));
+}
+
+function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    btnPlay.style.display  = 'inline-flex';
+    btnPause.style.display = 'none';
+}
+
+btnNext.addEventListener('click',  () => { stopPlay(); doNext(); });
+btnPrev.addEventListener('click',  doPrev);
+btnPlay.addEventListener('click',  startPlay);
+btnPause.addEventListener('click', stopPlay);
+
+speedSlider.addEventListener('input', () => {
+    if (playing) { stopPlay(); startPlay(); }
+});
+
+/* ══════════════════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════════════════ */
+function init() {
+    zbTree.style.top = (TREE_START_Y - 22) + 'px';
+
+    if (!stepsData.length) {
+        updateStatus('ready');
+        vsMsg.textContent = 'No step data found. Go back and click "Animate Step-by-Step".';
+        return;
+    }
+
+    renderStep(-1);
+    syncButtons();
+}
+
+init();
+})();
 </script>
 {% endblock %}
