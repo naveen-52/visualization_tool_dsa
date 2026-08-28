@@ -11,6 +11,14 @@ def huffman_index():
 def huffman_visualize():
     return render_template("huffman/visualize.html")
 
+@huffman_bp.route("/huffman/decoder", methods=["GET"])
+def huffman_decoder():
+    return render_template("huffman/decoder.html")
+
+@huffman_bp.route("/huffman/decoder/visualize", methods=["GET"])
+def huffman_decoder_visualize():
+    return render_template("huffman/decoder_visualize.html")
+
 # Preserving other UI routes to prevent HTML/Navigation breaks
 @huffman_bp.route("/huffman/result", methods=["GET"])
 def huffman_result():

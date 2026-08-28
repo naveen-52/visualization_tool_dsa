@@ -167,6 +167,9 @@ body.light-mode-preview .vb-btn:hover:not(:disabled) {
     font-family:'Inter',sans-serif;
     cursor:default; user-select:none;
 
+    /* Scale from top-left so left/top positioning stays accurate */
+    transform-origin: 0 0;
+
     /* Queue state (default) */
     background:#1e3a5f;
     border:2px solid #3b82f6;
@@ -194,7 +197,7 @@ body.light-mode-preview .vb-btn:hover:not(:disabled) {
 .hv-node.s-selected {
     background:#450a0a; border-color:var(--hv-red);
     box-shadow:0 0 22px rgba(239,68,68,0.55);
-    transform:scale(1.12) !important; z-index:15;
+    z-index:15;
 }
 .hv-node.s-tree {
     background:#0a221a; border-color:var(--hv-green);
@@ -297,16 +300,16 @@ body.light-mode-preview .vb-btn:hover:not(:disabled) {
    ══════════════════════════════════════════════════════ */
 const NODE_R        = 28;   // node radius
 const NODE_D        = 56;   // node diameter
-const QUEUE_CY      = 52;   // center-Y of queue zone
+const QUEUE_CY      = 60;   // center-Y of queue zone (single leaf nodes)
 const TREE_START_Y  = 128;  // Y where tree level-0 begins
 const TREE_LEVEL_H  = 88;   // vertical gap between tree levels
 const TREE_X_GAP    = 68;   // minimum horizontal gap between tree nodes
-const QUEUE_PADDING = 20;   // left/right padding inside queue zone
+const QUEUE_PADDING = 24;   // left/right padding inside queue zone
 
 // Mini-subtree layout constants
-const SUBTREE_SCALE   = 0.6;
-const SUBTREE_X_GAP   = 36;
-const SUBTREE_LEVEL_H = 32;
+const SUBTREE_SCALE   = 0.55;
+const SUBTREE_X_GAP   = 40;
+const SUBTREE_LEVEL_H = 38;
 
 /* Cached layout parameters — set by renderTree(), reused by insert-step drawEdges.
  * This guarantees edges are drawn with the EXACT same xOff as the node divs,
@@ -314,6 +317,9 @@ const SUBTREE_LEVEL_H = 32;
  * canvas.style.minHeight is updated). */
 let _treeXOff  = 0;
 let _treeXSpac = TREE_X_GAP + 12;
+
+/* Dynamic queue bottom — updated by layoutQueue so tree zone starts below it. */
+let _queueBottomY = TREE_START_Y;
 
 /* ══════════════════════════════════════════════════════
    STEP DATA  (written by index.html before redirect)
@@ -499,76 +505,114 @@ function layoutQueue(nodeList) {
     if (!nodeList || nodeList.length === 0) return;
 
     const W = canvas.offsetWidth || 800;
-    
+    const scaledD = NODE_D * SUBTREE_SCALE; // visual diameter of scaled nodes
+
     // Map each queue root node to its layout information
     const itemsInfo = nodeList.map(n => {
         const isMerged = !!(treeNodes[n.id] && (treeNodes[n.id].leftId || treeNodes[n.id].rightId));
         if (!isMerged) {
+            // Single leaf node: full-size circle
             return {
                 id: n.id,
                 isMerged: false,
-                width: NODE_D
+                width: NODE_D,
+                height: NODE_D
             };
         } else {
+            // Merged subtree: compute its layout to determine bounding box
             const layout = getSubtreeLayout(n.id);
-            const width = (layout.numLeaves - 1) * SUBTREE_X_GAP + NODE_D * SUBTREE_SCALE;
+            const width  = Math.max(scaledD, (layout.numLeaves - 1) * SUBTREE_X_GAP + scaledD);
+            const height = layout.maxDepth * SUBTREE_LEVEL_H + scaledD;
             return {
                 id: n.id,
                 isMerged: true,
-                width: width,
-                layout: layout
+                width,
+                height,
+                layout
             };
         }
     });
 
+    // Compute the tallest item so we can find a shared vertical center
+    const maxItemHeight = Math.max(...itemsInfo.map(it => it.height));
+    // The vertical center line for all queue items
+    const queueMidY = Math.max(QUEUE_CY, QUEUE_PADDING + maxItemHeight / 2);
+
+    // Horizontal layout — centre all items in the canvas
     const sumOfWidths = itemsInfo.reduce((acc, item) => acc + item.width, 0);
     const count = itemsInfo.length;
-    let itemGap = 20;
+    let itemGap = 24;
     if (count > 1) {
         const maxPossibleGap = (W - QUEUE_PADDING * 2 - sumOfWidths) / (count - 1);
-        itemGap = Math.max(8, Math.min(30, maxPossibleGap));
+        itemGap = Math.max(10, Math.min(36, maxPossibleGap));
     }
     const totalW = sumOfWidths + (count - 1) * itemGap;
     let currentX = Math.max(QUEUE_PADDING, (W - totalW) / 2);
 
     itemsInfo.forEach(item => {
         if (!item.isMerged) {
-            const px = currentX + NODE_R;
-            const py = QUEUE_CY;
+            // ── Single leaf node ──
+            // Centre it vertically at queueMidY
+            const topLeftX = currentX;
+            const topLeftY = queueMidY - NODE_R;  // centre at queueMidY
+
             getOrCreate({ id: item.id, ...treeNodes[item.id] });
-            moveNode(item.id, px - NODE_R, py - NODE_R);
+            moveNode(item.id, topLeftX, topLeftY);
             showNode(item.id);
             applyState(item.id, 'queue');
-            
+
             const el = registry.get(item.id).el;
             el.style.transform = 'scale(1.0)';
-            
-            nodePositions[item.id] = { cx: px, cy: py, scale: 1.0 };
+
+            // cx/cy = visual centre of the node
+            nodePositions[item.id] = {
+                cx: topLeftX + NODE_R,
+                cy: topLeftY + NODE_R,
+                scale: 1.0
+            };
             currentX += item.width + itemGap;
+
         } else {
+            // ── Merged mini-subtree ──
             const layout = item.layout;
-            const rootCenterY = QUEUE_CY - (layout.maxDepth * SUBTREE_LEVEL_H) / 2;
-            
+            const subtreeH = item.height;
+            // Top of this subtree block, centred at queueMidY
+            const blockTopY = queueMidY - subtreeH / 2;
+
             Object.keys(layout.pos).forEach(nodeId => {
                 const p = layout.pos[nodeId];
-                const px = currentX + p.col * SUBTREE_X_GAP + NODE_R * SUBTREE_SCALE;
-                const py = rootCenterY + p.depth * SUBTREE_LEVEL_H;
-                
+                // top-left of this scaled node within the block
+                const topLeftX = currentX + p.col * SUBTREE_X_GAP;
+                const topLeftY = blockTopY + p.depth * SUBTREE_LEVEL_H;
+
                 getOrCreate({ id: nodeId, ...treeNodes[nodeId] });
-                moveNode(nodeId, px - NODE_R, py - NODE_R);
+                moveNode(nodeId, topLeftX, topLeftY);
                 showNode(nodeId);
-                
+
                 const isNodeLeaf = !treeNodes[nodeId].leftId && !treeNodes[nodeId].rightId;
                 applyState(nodeId, isNodeLeaf ? 'queue' : 'merged');
-                
+
                 const el = registry.get(nodeId).el;
                 el.style.transform = `scale(${SUBTREE_SCALE})`;
-                
-                nodePositions[nodeId] = { cx: px, cy: py, scale: SUBTREE_SCALE };
+
+                // visual centre = topLeft + half of the *visual* (scaled) diameter
+                const halfScaledD = scaledD / 2;
+                nodePositions[nodeId] = {
+                    cx: topLeftX + halfScaledD,
+                    cy: topLeftY + halfScaledD,
+                    scale: SUBTREE_SCALE
+                };
             });
             currentX += item.width + itemGap;
         }
     });
+
+    /* Track the bottom edge of queue items for dynamic tree zone positioning */
+    const queueBottomEdge = queueMidY + maxItemHeight / 2 + 36;
+    _queueBottomY = Math.max(TREE_START_Y, queueBottomEdge);
+
+    /* Reposition the tree-zone label so it stays below the queue */
+    zbTree.style.top = (_queueBottomY - 22) + 'px';
 }
 
 /* ══════════════════════════════════════════════════════
@@ -640,21 +684,24 @@ function renderTree() {
     _treeXOff  = xOff;    // cache for insert step
     _treeXSpac = xSpac;  // cache for insert step
 
+    /* Use dynamic tree start Y (below queue items) */
+    const dynamicTreeStartY = _queueBottomY;
+
     /* Grow canvas height to fit the tree */
     const maxDepth = Math.max(...Object.values(pos).map(p => p.depth));
-    const canvasH  = TREE_START_Y + (maxDepth + 1) * TREE_LEVEL_H + NODE_D + 24;
+    const canvasH  = dynamicTreeStartY + (maxDepth + 1) * TREE_LEVEL_H + NODE_D + 24;
     canvas.style.minHeight = canvasH + 'px';
     svgEl.setAttribute('height', canvasH);
 
     /* Reposition the tree-zone label */
-    zbTree.style.top = (TREE_START_Y - 22) + 'px';
+    zbTree.style.top = (dynamicTreeStartY - 22) + 'px';
 
     /* Move every tree node to its computed position */
     for (const [id, p] of Object.entries(pos)) {
-        const px = xOff + p.col * xSpac;        // center-X of node
-        const py = TREE_START_Y + p.depth * TREE_LEVEL_H; // top-Y
+        const topLeftX = xOff + p.col * xSpac - NODE_R; // top-left X
+        const topLeftY = dynamicTreeStartY + p.depth * TREE_LEVEL_H; // top-left Y
         getOrCreate(treeNodes[id]);
-        moveNode(id, px - NODE_R, py);
+        moveNode(id, topLeftX, topLeftY);
         showNode(id);
         
         // Reset scale to 1.0 for tree nodes
@@ -664,7 +711,8 @@ function renderTree() {
         /* Root of the current partial tree → merged (indigo) */
         applyState(id, id === rootId ? 'merged' : 'tree');
         
-        nodePositions[id] = { cx: px, cy: py + NODE_R, scale: 1.0 };
+        // cx/cy = visual centre of the node
+        nodePositions[id] = { cx: topLeftX + NODE_R, cy: topLeftY + NODE_R, scale: 1.0 };
     }
 }
 
@@ -787,17 +835,47 @@ function renderStep(index) {
         /* ── SELECT ───────────────────────────────────── */
         case 'select': {
             /*
-             * Layout only the remaining queue (selected pair absent).
-             * The selected nodes keep their CURRENT left/top from the
-               previous layoutQueue call — no moveNode needed.
-             * Only their state class changes to 'selected'.
+             * Build a COMBINED list of queue + selected items, sorted by freq,
+             * so everything is laid out together and nothing overlaps.
+             * Then highlight the selected subtrees in red.
              */
-            layoutQueue(step.queue);
+            const selectedIds = new Set(step.selected.map(n => n.id));
 
+            /* Merge queue + selected into one sorted list */
+            const combined = [...step.queue, ...step.selected]
+                .sort((a, b) => a.freq - b.freq || a.id.localeCompare(b.id));
+
+            /* Ensure selected nodes exist in treeNodes */
+            step.selected.forEach(n => {
+                treeNodes[n.id] = treeNodes[n.id] || { ...n };
+            });
+
+            /* Layout all items together — no gaps, no overlaps */
+            layoutQueue(combined);
+
+            /* Recursively collect all node IDs in a subtree */
+            function collectSubtreeIds(rootId, out) {
+                if (!rootId || !treeNodes[rootId]) return;
+                out.push(rootId);
+                if (treeNodes[rootId].leftId)  collectSubtreeIds(treeNodes[rootId].leftId, out);
+                if (treeNodes[rootId].rightId) collectSubtreeIds(treeNodes[rootId].rightId, out);
+            }
+
+            /* Now apply the red 'selected' highlight on selected subtrees */
             step.selected.forEach(n => {
                 getOrCreate(n);
-                showNode(n.id);
-                applyState(n.id, 'selected');
+                const ids = [];
+                collectSubtreeIds(n.id, ids);
+                ids.forEach(nid => {
+                    showNode(nid);
+                    applyState(nid, 'selected');
+                    /* Preserve the scale the node already has */
+                    const pos = nodePositions[nid];
+                    if (pos) {
+                        const el = registry.get(nid)?.el;
+                        if (el) el.style.transform = `scale(${pos.scale})`;
+                    }
+                });
             });
             break;
         }

@@ -1,0 +1,553 @@
+================================================================================
+                    ALGOVIZ PRO - PROJECT STUDY GUIDE
+================================================================================
+
+This guide serves as a comprehensive explanation of the AlgoViz Pro web application,
+designed as if written by a senior software engineer, computer science professor,
+and technical interviewer. It covers every file, function, variable, route,
+and communication flow in the project.
+
+--------------------------------------------------------------------------------
+1. OVERALL APPLICATION OVERVIEW
+--------------------------------------------------------------------------------
+• What this application does:
+  AlgoViz Pro is an interactive, web-based platform for visualizing core computer 
+  science algorithms: Graph Coloring, Minimum Spanning Trees (MST), and Huffman Coding.
+  It allows users to input custom parameters (like graph adjacency matrices, character
+  strings, etc.) and view step-by-step visualizations of how these algorithms
+  process and compute results, using both backend-rendered images and dynamic frontend
+  visual animations.
+
+• What problem it solves:
+  Algorithms and data structures (especially graph and compression algorithms) are
+  highly abstract and difficult to grasp purely from static text or mathematical formulas.
+  By visualizing the state transitions (e.g., node coloring, edge selection in MST,
+  or priority queue pops and merges in Huffman trees), this application bridges the
+  gap between theory and visual mental models, facilitating intuitive learning.
+
+• Why these three algorithms were selected:
+  1. Graph Coloring: Represents NP-complete constraint-satisfaction problems,
+     showing how heuristic greedy search works (Welsh-Powell) and how backtracking 
+     is used to find all valid colorings.
+  2. Minimum Spanning Tree (MST): Highlights greedy optimization over edge weights,
+     comparing Prim's (vertex-centric, local selection) and Kruskal's (edge-centric,
+     global sorting, Disjoint Set Union) approaches.
+  3. Huffman Coding: Demonstrates optimal lossless data compression, combining
+     greedy strategies, priority queues (min-heaps), prefix-free codes, and binary
+     tree traversal.
+
+• Who can use this application:
+  Computer Science students, teachers/professors, software engineering candidates
+  preparing for technical interviews, and anyone interested in understanding graph theory,
+  optimization, and compression.
+
+• Real-world applications of the algorithms:
+  - Graph Coloring: Map coloring, register allocation in compilers, exam scheduling, 
+    sudoku solving, and radio frequency assignment.
+  - MST: Infrastructure network design (power grid, water pipelines, telecommunication
+    fiber layout), clustering in machine learning, and image segmentation.
+  - Huffman Coding: Traditional file compression formats (ZIP, GZIP), image/audio
+    compression (JPEG, MP3), and protocol telemetry transmission.
+
+• Advantages:
+  - Visual and interactive step-by-step animations.
+  - Ability to provide custom inputs (matrices and text strings) rather than static examples.
+  - Comprehensive logging and clear diagnostics.
+  - Hybrid rendering (using NetworkX/Matplotlib on the backend, and interactive SVGs on the frontend).
+
+• Limitations:
+  - High computational complexity for large matrices on the backend (e.g., NP-hard backtracking limit).
+  - Backend-rendered Matplotlib images are static on transition, though animation frames are pre-computed.
+
+--------------------------------------------------------------------------------
+2. PROJECT FOLDER STRUCTURE
+--------------------------------------------------------------------------------
+dsa_tool_2/
+├── app/
+│   ├── __init__.py               # Initializes Flask app package
+│   ├── algorithms/               # Pure algorithmic implementations
+│   │   ├── __init__.py
+│   │   ├── graph_coloring.py     # Welsh-Powell, Greedy vertex, Greedy edge, Backtracking
+│   │   ├── huffman.py            # Huffman tree node, Heap snap, Build tree, Decode text
+│   │   └── mst.py                # Prim's and Kruskal's with detailed step tracking
+│   ├── routes/                   # Route handlers / Controller blueprints
+│   │   ├── __init__.py
+│   │   ├── contact_routes.py     # SMTP config verification and email submissions
+│   │   ├── graph_routes.py       # Routes for graph matrix inputs, drawing, coloring
+│   │   ├── huffman_routes.py     # HTTP API/template endpoints for Huffman operations
+│   │   └── mst_routes.py         # Routes for MST algorithms and animated frames
+│   ├── services/                 # Orchestration and image generation layers
+│   │   ├── __init__.py
+│   │   ├── graph_builder.py      # NetworkX drawing for graphs and Huffman tree images
+│   │   └── huffman_service.py    # Formatting payloads, orchestrating encoder/decoder
+│   └── utils/
+│       ├── __init__.py
+│       └── validators.py         # Validation of square, symmetric, non-negative matrices
+├── static/                       # Client assets (CSS, Images, WebP, Mp4s)
+│   ├── css/
+│   │   └── style.css             # Main styling, page themes, and dark/light preview vars
+│   ├── Gemini_Generated_Image_ly5ov8ly5ov8ly5o.webp
+│   └── videos/
+│       └── Create_a_second_cinematic_a(2).mp4
+├── templates/                    # Jinja2 HTML templates
+│   ├── graph_coloring/
+│   │   ├── chromatic_index.html  # Renders chromatic results and edge coloring
+│   │   ├── graph.html            # Static circular SVG graph layout
+│   │   ├── index.html            # Form for selecting vertex count for coloring
+│   │   ├── manual_color.html     # Interactive form to color each node manually
+│   │   ├── manual_color_result.html # Validates manually colored graphs
+│   │   └── matrix.html           # Renders input cells for adjacency matrix
+│   ├── huffman/
+│   │   ├── decoder.html          # Plaintext decoder dashboard
+│   │   ├── index.html            # Huffman Encoder page and text inputs
+│   │   └── visualize.html        # Interactive priority queue & tree animator
+│   ├── mst/
+│   │   ├── index.html            # Form to set vertex count and pick Prim/Kruskal
+│   │   ├── matrix.html           # Input fields for edge weights adjacency matrix
+│   │   └── result.html           # Step-by-step MST visualization and frame slider
+│   ├── about.html
+│   ├── contact.html              # Contact page with AJAX-driven email support
+│   ├── home.html                 # Dashboard displaying platform stats and history
+│   ├── landing.html              # Beautiful introductory page
+│   └── layout.html               # Base structural template (navbar, footer, theme script)
+├── run.py                        # App launcher (Flask dev server or Waitress prod server)
+├── requirements.txt              # Python requirements (Flask, networkx, matplotlib, etc.)
+└── package.json                  # Frontend packaging description
+
+--------------------------------------------------------------------------------
+3. ARCHITECTURAL DATA FLOW
+--------------------------------------------------------------------------------
+User → Browser → HTML → CSS → JavaScript → Flask → Algorithm Logic → Visualization → Result
+
+Let's trace the exact lifecycle of data through the project:
+1. Entry: A user navigates to the page (e.g., /mst). Flask server processes the route and returns `mst/index.html`.
+2. Parameter Input: The user inputs a number of vertices (e.g., 5) and submits the form.
+3. Grid Matrix Form: The frontend submits an HTTP POST request to `/mst/matrix`. Flask returns a square matrix table where each cell (i, j) represents an edge weight between node i and node j.
+4. Calculation Request: The user fills out the weights and hits "Calculate". An HTTP POST is sent to `/mst/calculate`.
+5. Backend Processing:
+   a. Flask routes the request to `mst_routes.py:mst_calculate()`.
+   b. The matrix parameters are parsed into a 2D integer list.
+   c. The validator checks if the matrix is square, symmetric (since it's an undirected graph), and has no negative edge weights.
+   d. The controller invokes `mst.py:prims_mst()` or `kruskal_mst()`.
+   e. The algorithm runs and records a sequence of `steps` (the state of chosen edges at each iteration).
+   f. For each step, `mst_routes.py:generate_graph_image()` utilizes `NetworkX` to draw the graph layout, highlighting the "current node" in red and selected "MST edges" in green, and outputs a base64-encoded PNG image using `Matplotlib` in-memory.
+6. Template Rendering: The base64 images are sent in `step_images` to `mst/result.html`.
+7. Client-side Interaction: The browser displays the final graph image. The JavaScript in `result.html` reads `step_images` and allows the user to step forward and backward (or auto-play) through the MST construction steps by swapping the `src` attribute of an `<img>` tag with the base64 data.
+
+--------------------------------------------------------------------------------
+4. MODULE-BY-MODULE AND FILE-BY-FILE DETAIL
+--------------------------------------------------------------------------------
+
+================================================================================
+FILE: run.py
+================================================================================
+• Why it exists: 
+  Entry point of the Python server application.
+• Purpose: 
+  Loads environment variables, configures SMTP settings, registers Flask blueprints, 
+  and launches either a Werkzeug development server or a Waitress production server.
+• Connection with other files: 
+  Imports and registers blueprints from routes files (`graph_routes.py`, `mst_routes.py`, 
+  `huffman_routes.py`, `contact_routes.py`). Runs the server which renders templates.
+• Functions:
+  - `_validate_mail_config()`: Validates SMTP variables on startup and logs errors if placeholders are present.
+  - `add_cache_headers(response)`: Adds Cache-Control header to static assets.
+  - `serve_image_folder(filename)`: Serves images from the `image/` directory.
+  - `utility_processor()`: Exposes Python's built-in `chr()` function to templates.
+• Variables:
+  - `app`: Flask application instance.
+  - `mail`: Flask-Mail Mail instance.
+  - `_has_waitress`: Boolean indicating if `waitress` package is installed.
+  - `is_dev`: Boolean checking if running in development mode.
+• Important lines of code:
+  - `app.run(debug=True, host="127.0.0.1", port=5000)`: Boots up debug server.
+  - `serve(app, host="127.0.0.1", port=5000, threads=8)`: Waitress production execution.
+• Execution flow:
+  Validates mail config -> Registers blueprints -> Launches web server.
+• Why this approach was chosen:
+  Waitress is a production-grade WSGI server that prevents the single-threaded Flask dev server 
+  from blocking on multiple request connections.
+• If removed/changed:
+  The application cannot be started locally.
+
+================================================================================
+FILE: app/utils/validators.py
+================================================================================
+• Why it exists:
+  Ensures sanity of inputs before doing heavy graph algorithm calculations.
+• Purpose:
+  Validates that adjacency matrices are mathematically valid for undirected weighted graphs.
+• Connection with other files:
+  Imported and invoked by `mst_routes.py`.
+• Functions:
+  - `validate_weight_matrix(matrix)`: Validates format and properties.
+• Important lines of code:
+  - `if matrix[i][j] != matrix[j][i]: raise ValueError("Matrix must be symmetric.")`
+  - `if matrix[i][j] < 0: raise ValueError("Negative weights are not allowed.")`
+• If removed/changed:
+  Invalid inputs (like asymmetric matrices or negative edge weights) could crash the server
+  or cause infinite loops in graph processing.
+
+================================================================================
+FILE: app/algorithms/graph_coloring.py
+================================================================================
+• Why it exists:
+  Contains the backend graph coloring calculations.
+• Purpose:
+  Implements Welsh-Powell vertex coloring, Greedy edge coloring, and backtracking chromatic checks.
+• Connection with other files:
+  Invoked by `graph_routes.py`.
+• Functions:
+  - `welsh_powell_vertex_coloring(G)`: Computes vertex coloring.
+    1. Sorts nodes in descending order of their degree.
+    2. Sequentially assigns the lowest available integer color index to each node.
+  - `greedy_edge_coloring(G)`: Builds a line graph L (where edges of G become vertices of L) 
+    and uses largest-first greedy vertex coloring.
+  - `greedy_coloring_with_order(G, order)`: Performs greedy coloring using a specific list ordering.
+  - `count_min_colorings(G, k, limit)`: Backtracking search to count all valid colorings of G using k colors.
+• Variables:
+  - `coloring`: Dictionary mapping nodes/edges to color integers.
+  - `used_colors`: Set of colors occupied by adjacent neighbors.
+  - `assignment`: Dictionary representing current backtracking state.
+• Time and Space Complexity:
+  - Welsh-Powell: Time complexity is O(V^2 + V*E) where V is vertices and E is edges. Space complexity is O(V) for storing coloring map.
+  - Backtracking: Time complexity is O(k^V), space complexity is O(V) for recursive stack.
+• If removed/changed:
+  No graph coloring or chromatic index calculations can be performed on the backend.
+
+================================================================================
+FILE: app/algorithms/mst.py
+================================================================================
+• Why it exists:
+  Contains backend minimum spanning tree computations.
+• Purpose:
+  Implements Prim's and Kruskal's MST algorithms with step-by-step state logging.
+• Connection with other files:
+  Invoked by `mst_routes.py`.
+• Functions:
+  - `prims_mst(num_vertices, matrix)`: 
+    - Builds adjacency list.
+    - Initializes heap with `[(0, 0, -1)]` (weight, current, parent).
+    - Iteratively pops the minimum weight edge. If neighbor is unvisited, mark visited,
+      append to `mst_edges`, add to step log, and push neighbor edges to min-heap.
+  - `kruskal_mst(num_vertices, matrix)`:
+    - Sorts all edges by weight.
+    - Uses Union-Find (Disjoint Set Union) structures `parent` and `rank` to detect cycles.
+    - Iterates sorted edges, unions endpoints, appends edge if no cycle, and adds to step log.
+• Time and Space Complexity:
+  - Prim's: Time is O(E log V) using a heap. Space is O(V + E) for adjacency list and heap.
+  - Kruskal's: Time is O(E log E) for sorting. Space is O(V + E) for DSU.
+• If removed/changed:
+  The minimum spanning tree functionality will fail.
+
+================================================================================
+FILE: app/algorithms/huffman.py
+================================================================================
+• Why it exists:
+  Core Huffman encoding and decoding implementation.
+• Purpose:
+  Defines `HuffmanNode` class and builds tree structure and character-to-binary codes mapping.
+• Connection:
+  Orchestrated by `huffman_service.py` and invoked via `huffman_routes.py`.
+• Functions/Methods:
+  - `HuffmanNode.__lt__(self, other)`: Comparator sorting nodes in heap by frequency value.
+  - `HuffmanNode.to_dict()`: Iterative depth-first traversal converting tree node pointers 
+    into nested JSON-safe dictionaries.
+  - `_queue_snapshot(heap)`: Returns a stable serializable snapshot of current min-heap.
+  - `build_huffman(text, include_steps)`:
+    - Counts character frequencies via `Counter(text)`.
+    - Pushes leaf nodes to heap.
+    - Loops: pops two minimal frequency nodes, merges them under a parent node with sum frequency,
+      and pushes parent node back. Stores detailed snapshots for the front-end animation.
+    - Recovers binary codes by DFS stack traversal.
+  - `decode_huffman(encoded_text, codes)`: Inverts mapping (code -> character) and iterates bits,
+    reconstructing original string when a matching sequence is hit.
+• Variables:
+  - `heap`: Min-heap storing root nodes of growing subtrees.
+  - `steps`: Step actions: 'init', 'select', 'merge', 'insert'.
+• Time and Space Complexity:
+  - Encoding: Time is O(N + K log K) where N is text length and K is unique characters. Space is O(K) for tree.
+  - Decoding: Time is O(M) where M is encoded string length. Space is O(K).
+• If removed/changed:
+  Huffman visualization, compression, and decompression will not function.
+
+================================================================================
+FILE: app/routes/graph_routes.py
+================================================================================
+• Why it exists:
+  Controller handling HTTP routing for all graph coloring features.
+• Purpose:
+  Processes vertex inputs, generates random or spring layouts, draws static and coloured graphs
+  using Matplotlib, and handles manual colouring.
+• Routes:
+  - `GET /graph-coloring`: Renders the index.html selection page.
+  - `POST /graph-coloring/matrix`: Renders form grids based on vertex count.
+  - `POST /graph-coloring/visualize`: Accepts adjacency matrix, builds NetworkX graph,
+    creates layout pos, saves graph as base64 PNG, and stores matrix in Flask session.
+  - `POST /graph-coloring/chromatic`: Computes chromatic number, finds up to 20 valid colorings,
+    generates color mappings and edge coloring graphs.
+  - `GET /graph-coloring/manual`: Renders template allowing users to input colors.
+  - `POST /graph-coloring/manual-process`: Checks if manual node coloring violated neighboring rules,
+    renders result state showing correct or incorrect colors.
+• If removed/changed:
+  The graph coloring web interface will be inaccessible.
+
+================================================================================
+FILE: app/routes/mst_routes.py
+================================================================================
+• Why it exists:
+  Controller handling HTTP routing for Minimum Spanning Trees.
+• Purpose:
+  Receives matrix values, invokes MST algorithms, and renders step-by-step images.
+• Routes:
+  - `GET /mst`: Renders input selection template.
+  - `POST /mst/matrix`: Sets up matrix weight fields.
+  - `POST /mst/calculate`: Parses grid matrix, invokes Prim's/Kruskal's, creates base64 image
+    frames for every iteration step, and sends them to the result page.
+• If removed/changed:
+  The MST algorithm visualizer will fail.
+
+================================================================================
+FILE: app/routes/huffman_routes.py
+================================================================================
+• Why it exists:
+  Controller routing endpoints for Huffman compression features.
+• Purpose:
+  Handles routes for encoder dashboard, animations, and ajax compression APIs.
+• Routes:
+  - `GET /huffman`: Renders encoder dashboard index.html.
+  - `GET /huffman/visualize`: Renders tree builder animator.
+  - `GET /huffman/decoder`: Renders decompressor template.
+  - `POST /huffman/encode`: API returning JSON payload of encoded string, code map, and build steps.
+  - `POST /huffman/decode`: API returning decrypted string.
+• If removed/changed:
+  Huffman features will crash.
+
+================================================================================
+FILE: app/routes/contact_routes.py
+================================================================================
+• Why it exists:
+  Controller routing for feedback contact form.
+• Purpose:
+  Validates inputs, tests SMTP connectivity, constructs email message, and sends to administrator.
+• Routes:
+  - `POST /contact`: Returns JSON indicating success/error.
+• If removed/changed:
+  Feedback submissions will not work.
+
+================================================================================
+FILE: app/services/graph_builder.py
+================================================================================
+• Why it exists:
+  Graph visualization helper layer.
+• Purpose:
+  Converts networkx structures into base64 images. Also constructs Huffman tree visuals.
+• Functions:
+  - `generate_graph_image(G)`: Spring layout base64 exporter.
+  - `generate_huffman_tree_image(tree)`: Recursively builds tree nodes, layouts coordinate structure,
+    and returns base64 string.
+• If removed/changed:
+  Backend graph images will fail to render on result pages.
+
+================================================================================
+FILE: app/services/huffman_service.py
+================================================================================
+• Why it exists:
+  Service coordinator wrapper.
+• Purpose:
+  Implements length and character limit validations, calls building routines, and packages response dictionaries.
+• If removed/changed:
+  Boundary limit errors could cause performance degradation.
+
+--------------------------------------------------------------------------------
+5. DETAILED ALGORITHM EXPLANATION WITH WALKTHROUGHS
+--------------------------------------------------------------------------------
+
+================================================================================
+GRAPH COLORING
+================================================================================
+• Algorithm logic:
+  - Welsh-Powell:
+    1. Find degree of each vertex.
+    2. Sort vertices in descending order of degrees.
+    3. Take first vertex and color it with color index 0.
+    4. Go down the list and color all vertices that are not connected to the colored vertex 
+       with the same color.
+    5. Repeat with new colors until all vertices are colored.
+  - Backtracking search:
+    Tries all colors recursively. If a node cannot be colored without conflict, it backtracks 
+    and tries another color index.
+• How graph is stored:
+  Represented in memory using a NetworkX `Graph` object, which internally utilizes a nested dictionary 
+  adjacency structure.
+• How colors are assigned:
+  Assigned as integers `0, 1, 2...` which map to visual CSS palette colors (red, green, blue...).
+• Time complexity:
+  - Welsh-Powell sorting takes O(V log V). Iterative coloring check takes O(V^2). Total is O(V^2).
+  - Backtracking is O(k^V). Space is O(V).
+• Example Walkthrough (Welsh-Powell):
+  Consider vertices A, B, C, D connected as a square (A-B, B-C, C-D, D-A).
+  1. Degrees: A:2, B:2, C:2, D:2.
+  2. Sorted order: A, B, C, D.
+  3. Color A with Red.
+  4. Search uncolored non-neighbors of A: Node C is not adjacent to A. Color C with Red.
+  5. Next uncolored vertex is B. Color B with Green.
+  6. Search uncolored non-neighbors of B: Node D is not adjacent to B. Color D with Green.
+  7. Final assignments: A: Red, C: Red, B: Green, D: Green. Chromatic number = 2.
+
+================================================================================
+MINIMUM SPANNING TREE (MST)
+================================================================================
+• Algorithm logic:
+  - Prim's:
+    1. Start at node 0. Set visited = {0}.
+    2. Push adjacent edges of node 0 to a min-heap.
+    3. Pop edge (u, v, weight) with smallest weight.
+    4. If v is already visited, discard. Otherwise, add v to visited, add edge to MST, 
+       and push all edges from v to unvisited nodes to the heap.
+    5. Repeat until all nodes are visited.
+  - Kruskal's:
+    1. Collect all edges, sort them by weight ascending.
+    2. Iterate through sorted edges. For edge (u, v, weight):
+    3. Find roots of u and v in DSU.
+    4. If roots are different (meaning no cycle forms), perform union on u and v, 
+       and add edge to MST.
+    5. Repeat until V-1 edges are added.
+• Time complexity:
+  - Prim's: O(E log V) time, O(V + E) space.
+  - Kruskal's: O(E log E) time, O(V) space.
+• Example Walkthrough (Prim's):
+  Nodes: 0, 1, 2. Weights: 0-1 (4), 1-2 (2), 0-2 (5).
+  1. Visited = {0}. Heap = [(4, 1, 0), (5, 2, 0)]  (weight, to, from).
+  2. Pop minimum weight: (4, 1, 0). Node 1 is not visited.
+     - Add edge 0-1 to MST. Visited = {0, 1}.
+     - Push edges from Node 1: (2, 2, 1). Heap is now [(2, 2, 1), (5, 2, 0)].
+  3. Pop minimum weight: (2, 2, 1). Node 2 is not visited.
+     - Add edge 1-2 to MST. Visited = {0, 1, 2}.
+     - Loop ends (all visited).
+  4. Final MST edges: 0-1 and 1-2. Total weight = 6.
+
+================================================================================
+HUFFMAN CODING
+================================================================================
+• Algorithm logic:
+  1. Build frequency map of characters in the string.
+  2. Place all characters as leaf nodes in a priority queue (min-heap), ordered by frequency.
+  3. While queue size > 1:
+     - Pop two nodes with the lowest frequencies (left child and right child).
+     - Create a parent node with frequency = left.freq + right.freq, pointing to these children.
+     - Push parent node back into the min-heap.
+  4. The single remaining node is the root of the Huffman Tree.
+  5. Traverse the tree from root: going left appends "0", going right appends "1".
+• Time complexity:
+  - Tree construction: O(K log K) where K is unique character count.
+  - Text encoding: O(N) where N is text length.
+  - Text decoding: O(M) where M is encoded string length.
+• Example Walkthrough:
+  Input text: "ABAA"
+  1. Frequencies: A:3, B:1.
+  2. Heap: [B:1, A:3].
+  3. Pop two nodes: Left = B:1, Right = A:3.
+  4. Merge: Parent Node frequency = 4. Children = (Left: B, Right: A).
+  5. Push back. Heap size is 1. Root frequency = 4.
+  6. Traverse: Code for B = 0, Code for A = 1.
+  7. Encoded bits for "ABAA" = 1011.
+
+--------------------------------------------------------------------------------
+6. FRONTEND PRESENTATION AND DYNAMICS
+--------------------------------------------------------------------------------
+• Every HTML page:
+  - `layout.html`: The parent structural frame containing navbar, footer, icons,
+    Google Fonts (Outfit, Inter), and light/dark theme switching logic.
+  - `home.html`: Dashboard illustrating platform usage stats.
+  - `graph_coloring/matrix.html`: Adjacency matrix grid creation.
+  - `graph_coloring/chromatic_index.html`: Displays slider controls to browse through
+    all distinct vertex color graphs.
+  - `mst/result.html`: Houses the slider animations, playing base64 image steps.
+  - `huffman/index.html`: Panel interface capturing text inputs.
+  - `huffman/visualize.html`: Highly custom SVG visualizer containing node positions,
+    dynamically drawing parent-child lines.
+• Animations:
+  - CSS keyframes for spinners, fade-ins, and glow effects.
+  - SVG edge line translations.
+• Event listeners:
+  - `click` listeners on control buttons (Play, Pause, Next, Prev, Reset).
+  - `input` listeners for textarea char counting.
+• Fetch API calls:
+  - `/huffman/encode` and `/huffman/decode` exchange JSON payloads asynchronously.
+• DOM manipulation:
+  - Nodes dynamically added as absolute elements in `huffman/visualize.html`.
+  - Class toggling (`active`, `done`, `copied`).
+
+--------------------------------------------------------------------------------
+7. FLASK BACKEND COMMUNICATIONS AND APIS
+--------------------------------------------------------------------------------
+• Communication styles:
+  1. Standard HTTP POST Forms: Matrix submission posts coordinates form parameters.
+     Flask parses request fields and renders static Jinja pages (like `mst/result.html` 
+     with embedded base64 images).
+  2. AJAX Fetch requests: Huffman coding exchanges JSON datasets without reloading pages.
+• Routes summary:
+  - `/` (landing)
+  - `/dashboard` (home)
+  - `/graph-coloring` (coloring configuration)
+  - `/mst` (spanning tree configuration)
+  - `/huffman` (compression panel)
+  - `/contact` (contact form validation and emailing)
+
+--------------------------------------------------------------------------------
+8. INTERVIEW & VIVA PREPARATION QUESTIONS
+--------------------------------------------------------------------------------
+1. Why is a Priority Queue (min-heap) used in Huffman tree construction?
+   - Answer: We need to repeatedly extract the two nodes with the lowest frequencies.
+     A min-heap performs extraction in O(log K) and insertion in O(log K), which is 
+     optimal for this greedy strategy.
+2. What are prefix-free codes, and why are they important?
+   - Answer: A set of codes where no code is a prefix of any other. It guarantees that
+     encoded strings can be decoded uniquely and instantly without separators.
+3. How does Kruskal's algorithm detect cycles?
+   - Answer: Using a Disjoint Set Union (DSU) data structure. For each edge (u, v),
+     if `find(u) == find(v)`, they belong to the same set and adding the edge would
+     form a cycle.
+4. What is the chromatic number of a graph?
+   - Answer: The minimum number of colors needed to color the vertices of a graph
+     such that no two adjacent vertices share the same color.
+5. Why does Welsh-Powell sort vertices by degree?
+   - Answer: It is a greedy heuristic. Vertices with higher degrees have the most adjacent
+     coloring constraints, so coloring them first leaves more color options for lower-degree nodes.
+
+--------------------------------------------------------------------------------
+9. VIVA SPECIFIC / FACULTY QUESTIONS
+--------------------------------------------------------------------------------
+1. "Where are the actual animation frames generated for MST?"
+   - Answer: On the backend inside `mst_routes.py`. The route handler iterates through the 
+     steps of the MST algorithm, calls Matplotlib to save a PNG image of each state as a
+     base64 string, and puts them in `step_images`.
+2. "Why does Huffman use AJAX Fetch while MST uses traditional HTTP Form POSTs?"
+   - Answer: Huffman needs a highly responsive interface that updates dynamic elements 
+     (e.g., interactive SVGs and character mappings) on the client side in real-time. 
+     MST uses form postings because it relies on rendering complex Matplotlib graphs on 
+     the server side.
+
+--------------------------------------------------------------------------------
+10. PRESENTATION SCRIPT
+--------------------------------------------------------------------------------
+"Good morning, members of the faculty. Today I will present my project, AlgoViz Pro,
+an interactive visual platform designed to teach core data structures and algorithms.
+
+Our application targets three fundamental algorithm groups: Graph Coloring,
+Minimum Spanning Trees, and Huffman compression.
+
+At its core, the project uses a Flask backend to coordinate algorithm execution and
+server-side graph rendering using NetworkX and Matplotlib. The frontend is built
+with responsive HTML, CSS design systems, and client-side JavaScript that enables
+interactive SVG tree construction and step-by-step frame animations.
+
+When a user runs the Huffman coding, they enter text, and the backend returns the
+encoded string alongside the exact steps taken by the min-heap queue. The frontend
+visualizer animates this by popping nodes, showing them merge in red, and placing them 
+into the queue in sorted order.
+
+This tool solves the challenge of understanding abstract algorithms by turning complex
+calculations into clear, interactive visual flows."
+================================================================================

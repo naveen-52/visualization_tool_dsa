@@ -41,18 +41,21 @@
             <label class="form-label" for="num_colors">Number of Colors</label>
 
             <input type="number"
-       id="num_colors"
-       name="num_colors"
-       class="form-input"
-       
-       required
-       placeholder="Enter number of colors">
+                   id="num_colors"
+                   name="num_colors"
+                   class="form-input"
+                   placeholder="Enter number of colors">
+
+            <div id="colorHint" style="display: none; margin-top: 8px; font-size: 13.5px; color: var(--hc-green, #10b981); font-weight: 500;">
+                <i class="fas fa-check-circle"></i> <span id="hintText"></span>
+            </div>
+
+            <div id="colorError" class="alert alert-danger" style="display: none; margin-top: 10px;"></div>
 
             <button type="button"
                     class="btn btn-secondary"
-                    style="margin-top:10px"
+                    style="margin-top:12px"
                     onclick="generateSelectors()">
-
                 Generate Vertex Color Options
             </button>
         </div>
@@ -68,8 +71,8 @@
             </button>
 
             <a href="/graph-coloring/graph" class="btn btn-secondary">
-← Back to Graph
-</a>
+                ← Back to Graph
+            </a>
 
         </div>
 
@@ -80,46 +83,100 @@
 const numVertices = Number("{{ num_vertices }}");
 const container = document.getElementById("vertexSelectors");
 const inputField = document.getElementById("num_colors");
+const errorDiv = document.getElementById("colorError");
+const hintDiv = document.getElementById("colorHint");
+const hintText = document.getElementById("hintText");
 
-// 🔥 CREATE ERROR DIV IF NOT EXISTS
-let errorDiv = document.getElementById("colorError");
-if (!errorDiv) {
-    errorDiv = document.createElement("div");
-    errorDiv.id = "colorError";
-    errorDiv.className = "alert alert-danger";
-    errorDiv.style.marginTop = "10px";
+// ==========================
+// 🔥 INPUT VALIDATION & GUIDANCE
+// ==========================
+function validateColorInput(shouldFocus = true) {
+    const rawVal = inputField.value.trim();
+
+    // Reset states
     errorDiv.style.display = "none";
-    inputField.parentNode.appendChild(errorDiv);
+    errorDiv.innerHTML = "";
+    if (hintDiv) hintDiv.style.display = "none";
+    inputField.style.borderColor = "";
+    inputField.style.boxShadow = "";
+
+    // 1. Empty check
+    if (rawVal === "") {
+        showError("Please enter the number of colors before continuing.", shouldFocus);
+        return false;
+    }
+
+    const val = Number(rawVal);
+
+    // 2. Non-numeric check
+    if (isNaN(val)) {
+        showError("Please enter a valid numeric value.", shouldFocus);
+        return false;
+    }
+
+    // 3. Zero or negative check
+    if (val <= 0) {
+        showError("The number of colors must be greater than 0.", shouldFocus);
+        return false;
+    }
+
+    // 4. Greater than total vertices check
+    if (val > numVertices) {
+        showError(`The number of colors cannot exceed the total number of graph vertices (${numVertices}).`, shouldFocus);
+        return false;
+    }
+
+    // Success State
+    if (hintDiv && hintText) {
+        const numberWords = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"];
+        const word = (val <= 12) ? numberWords[val] : val;
+        const colorNoun = val === 1 ? 'color is' : 'colors are';
+
+        if (val < numVertices) {
+            hintText.textContent = `✓ ${word} ${colorNoun} available for graph coloring. Colors may be reused whenever adjacency constraints allow.`;
+        } else {
+            hintText.textContent = `✓ ${word} ${colorNoun} available for graph coloring. Each vertex can receive a unique color if required.`;
+        }
+        hintDiv.style.display = "block";
+    }
+    return true;
+
+    function showError(msg, focusInput) {
+        errorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${msg}`;
+        errorDiv.style.display = "block";
+        inputField.style.borderColor = "var(--hc-red, #ef4444)";
+        inputField.style.boxShadow = "0 0 0 3px rgba(239, 68, 68, 0.25)";
+        if (focusInput) {
+            inputField.focus();
+        }
+    }
 }
+
+// Live validation on typing
+inputField.addEventListener("input", function() {
+    validateColorInput(false);
+});
+
+// Form submit validation
+document.querySelector("form").addEventListener("submit", function(e) {
+    if (!validateColorInput(true)) {
+        e.preventDefault();
+        return;
+    }
+    if (container.children.length === 0) {
+        generateSelectors();
+    }
+});
 
 // ==========================
 // 🔥 GENERATE SELECTORS
 // ==========================
-function generateSelectors(){
+function generateSelectors() {
+    if (!validateColorInput(true)) {
+        return;
+    }
 
     const k = parseInt(inputField.value);
-
-    // RESET ERROR
-    errorDiv.style.display = "none";
-    errorDiv.textContent = "";
-
-    // ❌ VALIDATION
-    if(!k || isNaN(k)){
-        errorDiv.textContent = "Please enter a valid number.";
-        errorDiv.style.display = "block";
-        return;
-    }
-
-    // ✅ ONLY CONDITION (EQUALITY)
-    if(k !== numVertices){
-        errorDiv.innerHTML = `
-        <i class="fas fa-exclamation-circle"></i>
-        You must enter exactly ${numVertices} colors
-        `;
-        errorDiv.style.display = "block";
-        return;
-    }
-
     container.innerHTML = "";
 
     const colorList = [
@@ -136,96 +193,55 @@ function generateSelectors(){
         "Deep Purple", "Emerald", "Amber", "Slate Grey"
     ];
 
-    for(let i=0;i<numVertices;i++){
-
+    for (let i = 0; i < numVertices; i++) {
         let html = `
         <div class="form-group" style="margin-bottom: 16px;">
-        <label class="form-label">Vertex ${i+1}</label>
+            <label class="form-label">Vertex ${i + 1}</label>
 
-        <select name="color_${i}" 
-                class="form-input vertex-select"
-                onchange="updateOptions()">
+            <select name="color_${i}" 
+                    class="form-input vertex-select"
+                    onchange="updateOptions()">
         `;
 
-        for(let c=1;c<=k;c++){
-            const colorIdx = c % colorList.length;
+        for (let c = 1; c <= k; c++) {
+            const colorIdx = (c - 1) % colorList.length;
             const hex = colorList[colorIdx];
             const name = colorNames[colorIdx];
             html += `
             <option value="${c}" style="background:${hex}; color:#fff;">
-                ${name}
+                Color ${c}: ${name}
             </option>`;
         }
 
         html += `</select></div>`;
-
         container.innerHTML += html;
     }
+
+    updateOptions();
 }
 
 // ==========================
-// 🔥 UPDATE OPTIONS (NO CHANGE)
+// 🔥 UPDATE OPTIONS
 // ==========================
-function updateOptions(){
-
+function updateOptions() {
     const selects = document.querySelectorAll(".vertex-select");
-
     let usedColors = [];
 
-    selects.forEach(s=>{
-        if(s.value) usedColors.push(s.value);
+    selects.forEach(s => {
+        if (s.value) usedColors.push(s.value);
     });
 
-    selects.forEach(select=>{
-
+    selects.forEach(select => {
         let current = select.value;
-
-        Array.from(select.options).forEach(opt=>{
-
-            if(opt.value !== current && usedColors.includes(opt.value)){
-                opt.style.display="none";
+        Array.from(select.options).forEach(opt => {
+            if (opt.value !== current && usedColors.includes(opt.value)) {
+                opt.style.display = "none";
             } else {
-                opt.style.display="block";
+                opt.style.display = "block";
             }
-
         });
-
     });
-
 }
-
-// ==========================
-// 🔥 LIVE VALIDATION (FIXED)
-// ==========================
-inputField.addEventListener("input", function(){
-
-    const value = parseInt(this.value);
-
-    errorDiv.style.display = "none";
-
-    if(!this.value){
-        errorDiv.textContent = "Number of colors is required.";
-        errorDiv.style.display = "block";
-        return;
-    }
-
-    if(isNaN(value)){
-        errorDiv.textContent = "Enter a valid number.";
-        errorDiv.style.display = "block";
-        return;
-    }
-
-    // ✅ FIXED: correct variable + equality logic
-    if(value !== numVertices){
-        errorDiv.innerHTML = `
-        <i class="fas fa-exclamation-circle"></i>
-        Must be exactly ${numVertices} colors
-        `;
-        errorDiv.style.display = "block";
-        return;
-    }
-
-});
 </script>
 
 {% endblock %}

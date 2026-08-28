@@ -1,0 +1,1135 @@
+{% extends "layout.html" %}
+
+{% block title %}Huffman Decoder – AlgoViz Pro{% endblock %}
+
+{% block breadcrumbs %}
+<span>Home</span>
+<i class="fas fa-chevron-right breadcrumb-separator"></i>
+<a href="/huffman" style="color: var(--text-secondary); text-decoration: none;">Huffman Coding</a>
+<i class="fas fa-chevron-right breadcrumb-separator"></i>
+<span>Decoder</span>
+{% endblock %}
+
+{% block content %}
+
+<style>
+/* ─────────────────────────────────────────────
+   DESIGN TOKENS & OVERLAY SCOPED TO DECODER
+   ───────────────────────────────────────────── */
+:root {
+    --hc-bg-page:        #020617;
+    --hc-bg-panel:       rgba(11, 18, 40, 0.65);
+    --hc-bg-panel-alt:   #0f172a;
+    --hc-bg-inset:       #0f172a;
+    --hc-border:         rgba(255, 255, 255, 0.08);
+    --hc-border-accent:  rgba(37, 99, 235, 0.35);
+
+    --hc-indigo:         #2563eb;
+    --hc-indigo-hover:   #1d4ed8;
+    --hc-indigo-muted:   rgba(37, 99, 235, 0.15);
+    --hc-cyan:           #38bdf8;
+    --hc-amber:          #fbbf24;
+    --hc-green:          #34d399;
+    --hc-red:            #f87171;
+
+    --hc-text-primary:   #ffffff;
+    --hc-text-secondary: #cbd5e1;
+    --hc-text-muted:     #94a3b8;
+
+    --hc-radius-sm:      8px;
+    --hc-radius-md:      12px;
+    --hc-radius-lg:      18px;
+
+    --hc-shadow-panel:   0 16px 40px rgba(0, 0, 0, 0.3);
+    --hc-transition:     all 0.18s ease;
+}
+
+body.light-mode-preview {
+    --hc-bg-page:        #f8fbff;
+    --hc-bg-panel:       #ffffff;
+    --hc-bg-panel-alt:   #f8fbff;
+    --hc-bg-inset:       #f8fafc;
+    --hc-border:         #e2e8f0;
+    --hc-border-accent:  rgba(37, 99, 235, 0.28);
+
+    --hc-indigo:         #2563eb;
+    --hc-indigo-hover:   #1d4ed8;
+    --hc-indigo-muted:   rgba(37, 99, 235, 0.10);
+    --hc-cyan:           #0ea5e9;
+    --hc-amber:          #f59e0b;
+    --hc-green:          #10b981;
+    --hc-red:            #ef4444;
+
+    --hc-text-primary:   #0f172a;
+    --hc-text-secondary: #475569;
+    --hc-text-muted:     #64748b;
+}
+
+/* ─────────────────────────────────────────────
+   PAGE WRAPPER & GRID
+   ───────────────────────────────────────────── */
+.hx-page {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 0 48px;
+}
+
+.hx-workspace {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 20px;
+    align-items: start;
+}
+@media (max-width: 1024px) {
+    .hx-workspace { grid-template-columns: 1fr; }
+}
+
+/* ─────────────────────────────────────────────
+   PANELS & UTILITIES
+   ───────────────────────────────────────────── */
+.hx-panel {
+    background: var(--hc-bg-panel);
+    border: 1px solid var(--hc-border);
+    border-radius: var(--hc-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--hc-shadow-panel);
+    display: flex;
+    flex-direction: column;
+}
+.hx-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--hc-border);
+    background: var(--hc-bg-panel-alt);
+}
+.hx-panel-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--hc-text-secondary);
+}
+.hx-panel-label i { font-size: 11px; }
+.hx-panel-label span.accent { color: var(--hc-indigo); }
+.hx-panel-tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--hc-text-muted);
+    background: var(--hc-bg-inset);
+    border: 1px solid var(--hc-border);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+.hx-panel-body {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ─────────────────────────────────────────────
+   TABLE EDITOR STYLE
+   ───────────────────────────────────────────── */
+.decoder-table-wrap {
+    background: var(--hc-bg-inset);
+    border: 1px solid var(--hc-border);
+    border-radius: var(--hc-radius-md);
+    overflow: hidden;
+}
+.decoder-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+}
+.decoder-table th, .decoder-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--hc-border);
+}
+.decoder-table th {
+    font-weight: 600;
+    color: var(--hc-text-muted);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    background: rgba(255,255,255,0.01);
+}
+.decoder-table input.table-input {
+    background: var(--hc-bg-inset);
+    border: 1px solid var(--hc-border);
+    color: var(--hc-text-primary);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13.5px;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+    transition: var(--hc-transition);
+}
+.decoder-table input.table-input:focus {
+    border-color: var(--hc-border-accent);
+}
+.decoder-table .btn-delete-row {
+    background: transparent;
+    border: none;
+    color: var(--hc-red);
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    padding: 6px 12px;
+}
+.decoder-table .btn-delete-row:hover {
+    opacity: 1;
+}
+
+/* ─────────────────────────────────────────────
+   INPUT ELEMENTS
+   ───────────────────────────────────────────── */
+.decoder-text-input {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--hc-bg-inset);
+    border: 1px solid var(--hc-border);
+    color: var(--hc-text-primary);
+    border-radius: var(--hc-radius-md);
+    font-size: 14px;
+    font-family: monospace;
+    outline: none;
+    box-sizing: border-box;
+    transition: var(--hc-transition);
+}
+.decoder-text-input:focus {
+    border-color: var(--hc-border-accent);
+}
+
+/* Buttons */
+.hx-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    border-radius: var(--hc-radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: var(--hc-transition);
+    text-decoration: none;
+    white-space: nowrap;
+    line-height: 1;
+}
+.hx-btn-primary {
+    background: var(--hc-indigo);
+    color: #fff;
+    border-color: var(--hc-indigo);
+}
+.hx-btn-primary:hover {
+    background: var(--hc-indigo-hover);
+    border-color: var(--hc-indigo-hover);
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.35);
+    transform: translateY(-1px);
+}
+.hx-btn-ghost {
+    background: transparent;
+    color: var(--hc-text-secondary);
+    border-color: var(--hc-border);
+}
+.hx-btn-ghost:hover {
+    border-color: var(--hc-border-accent);
+    color: var(--hc-text-primary);
+    background: var(--hc-indigo-muted);
+}
+.hx-btn-slim {
+    padding: 7px 14px;
+    font-size: 12px;
+    background: transparent;
+    color: var(--hc-text-muted);
+    border-color: var(--hc-border);
+    border-radius: var(--hc-radius-sm);
+}
+.hx-btn-slim:hover {
+    color: var(--hc-text-secondary);
+    border-color: rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.04);
+}
+
+/* ─────────────────────────────────────────────
+   VISUALIZATION CANVAS & CONTROLS
+   ───────────────────────────────────────────── */
+.viz-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: var(--hc-bg-panel-alt);
+    border: 1px solid var(--hc-border);
+    border-radius: 12px;
+    padding: 10px 14px;
+}
+.viz-bar-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--hc-text-primary);
+    margin-right: auto;
+}
+.vb-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid var(--hc-border);
+    background: rgba(255,255,255,0.04);
+    color: var(--hc-text-secondary);
+    cursor: pointer;
+    transition: all 0.18s;
+}
+.vb-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.08);
+    color: var(--hc-text-primary);
+}
+.vb-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+.vb-btn.accent {
+    background: var(--hc-indigo);
+    border-color: var(--hc-indigo);
+    color: #fff;
+}
+.vb-btn.accent:hover:not(:disabled) {
+    background: var(--hc-indigo-hover);
+}
+.vb-speed {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--hc-text-muted);
+}
+.vb-speed input[type=range] {
+    width: 80px;
+    accent-color: var(--hc-indigo);
+    cursor: pointer;
+}
+.vb-counter {
+    font-size: 11px;
+    color: var(--hc-text-muted);
+    min-width: 50px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.viz-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--hc-bg-panel-alt);
+    border: 1px solid var(--hc-border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12.5px;
+}
+.vs-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.vs-badge.init   { color: var(--hc-cyan);   background: rgba(56,189,248,.12);  border: 1px solid rgba(56,189,248,.3); }
+.vs-badge.select { color: var(--hc-amber);  background: rgba(251,191,36,.12);  border: 1px solid rgba(251,191,36,.3); }
+.vs-badge.merge  { color: var(--hc-green);  background: rgba(52,211,153,.12);  border: 1px solid rgba(52,211,153,.3); }
+.vs-badge.insert { color: var(--hc-cyan);   background: rgba(56,189,248,.12);  border: 1px solid rgba(56,189,248,.3); }
+.vs-badge.ready  { color: var(--hc-amber);  background: rgba(251,191,36,.12);  border: 1px solid rgba(251,191,36,.3); }
+.vs-badge.done   { color: var(--hc-green);  background: rgba(52,211,153,.12);  border: 1px solid rgba(52,211,153,.3); }
+.vs-sep  { color: var(--hc-border); }
+.vs-msg  { color: var(--hc-text-secondary); }
+
+.viz-shell {
+    width: 100%;
+    background: var(--hc-bg-inset);
+    border: 1px solid var(--hc-border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.hv-canvas {
+    position: relative;
+    width: 100%;
+    min-height: 380px;
+    overflow: hidden;
+}
+
+.hv-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: visible;
+}
+.tree-edge {
+    stroke: rgba(99, 102, 241, 0.4);
+    stroke-width: 2;
+    stroke-linecap: round;
+    transition: stroke 0.3s, stroke-width 0.3s;
+}
+.edge-lbl {
+    fill: var(--hc-text-muted);
+    font-size: 11px;
+    font-family: monospace;
+    font-weight: 700;
+}
+
+.hv-node {
+    position: absolute;
+    z-index: 10;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+    cursor: default;
+    user-select: none;
+    transform-origin: 0 0;
+    background: #1e3a5f;
+    border: 2px solid #3b82f6;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.25);
+    transition: left 0.4s ease, top 0.4s ease, opacity 0.25s ease, transform 0.25s ease, background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.hv-node .nv-char { font-size: 14px; font-weight: 700; color: #e2e8f0; line-height: 1; }
+.hv-node.s-tree {
+    background: #0a221a;
+    border: 2px solid var(--hc-green);
+    box-shadow: 0 2px 10px rgba(52,211,153,0.2);
+}
+.hv-node.s-merged {
+    background: #14103a;
+    border: 2px solid var(--hc-indigo);
+    box-shadow: 0 2px 8px rgba(99,102,241,0.2);
+}
+.hv-node.s-selected {
+    background: #450a0a;
+    border: 2px solid var(--hc-red);
+    box-shadow: 0 0 18px rgba(239,68,68,0.55);
+    transform: scale(1.1) !important;
+    z-index: 15;
+}
+.hv-canvas.no-anim .hv-node {
+    transition: none !important;
+}
+
+/* ─────────────────────────────────────────────
+   VISUAL BIT TRACKING
+   ───────────────────────────────────────────── */
+.bit-sequence-container {
+    background: var(--hc-bg-panel-alt);
+    border: 1px solid var(--hc-border);
+    border-radius: var(--hc-radius-md);
+    padding: 14px;
+}
+.bit-sequence-title {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--hc-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+}
+.bit-sequence {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 20px;
+    font-weight: bold;
+}
+.bit-sequence .bit {
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--hc-text-primary);
+    transition: all 0.2s;
+}
+.bit-sequence .bit.processed {
+    opacity: 0.25;
+}
+.bit-sequence .bit.current {
+    color: #000;
+    background: var(--hc-amber);
+    transform: scale(1.25);
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.7);
+}
+
+/* ─────────────────────────────────────────────
+   LIVE DECODED OUTPUT
+   ───────────────────────────────────────────── */
+.live-decoded-container {
+    background: var(--hc-bg-panel-alt);
+    border: 1px solid var(--hc-border);
+    border-radius: var(--hc-radius-md);
+    padding: 14px;
+}
+.live-decoded-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--hc-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+}
+.live-decoded-val {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--hc-green);
+    min-height: 32px;
+    word-break: break-all;
+}
+
+/* ─────────────────────────────────────────────
+   STATS SUMMARY CARD
+   ───────────────────────────────────────────── */
+.stats-summary-card {
+    background: rgba(37, 99, 235, 0.08);
+    border: 1px solid var(--hc-border-accent);
+    border-radius: var(--hc-radius-md);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.stats-summary-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--hc-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.stats-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+.stats-summary-item {
+    background: var(--hc-bg-inset);
+    border: 1px solid var(--hc-border);
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+}
+.stats-summary-item .lbl {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--hc-text-muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    letter-spacing: 0.03em;
+}
+.stats-summary-item .val {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--hc-text-primary);
+    word-break: break-all;
+}
+
+/* ─────────────────────────────────────────────
+   ERROR TOAST
+   ───────────────────────────────────────────── */
+.hx-toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 9999;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #1c1f2e;
+    border: 1px solid var(--hc-red);
+    border-radius: var(--hc-radius-md);
+    padding: 14px 18px;
+    max-width: 340px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: transform 0.28s ease, opacity 0.28s ease;
+    pointer-events: none;
+}
+.hx-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+.hx-toast i { color: var(--hc-red); margin-top: 1px; flex-shrink: 0; }
+.hx-toast-msg { font-size: 12px; color: var(--hc-text-secondary); line-height: 1.5; }
+.hx-toast-close {
+    background: none; border: none; color: var(--hc-text-muted);
+    cursor: pointer; padding: 0; margin-left: auto; line-height: 1;
+    font-size: 14px; flex-shrink: 0;
+}
+.hx-toast-close:hover { color: var(--hc-text-primary); }
+
+.output-idle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 300px;
+    text-align: center;
+    color: var(--hc-text-muted);
+    padding: 32px 20px;
+}
+.output-idle i { font-size: 32px; opacity: 0.35; }
+.output-idle p { font-size: 13px; line-height: 1.6; max-width: 260px; margin: 0; }
+</style>
+
+<div class="hx-page">
+
+    <!-- ══ PAGE HERO ══════════════════════════════════════ -->
+    <section class="page-hero" style="margin-bottom: 28px;">
+        <div class="page-hero-content">
+            <div class="page-eyebrow"><i class="fas fa-unlock"></i> Decoding Mode</div>
+            <h1 class="page-title">Huffman Decoder</h1>
+            <p class="page-subtitle">
+                Validate character-to-binary Huffman code tables and decode binary sequences dynamically. Follow along step-by-step as each bit traverses the generated binary decoding tree to reconstruct the original text.
+            </p>
+            <div class="page-actions">
+                <a href="/huffman" class="btn btn-secondary"><i class="fas fa-lock"></i> Encode & Visualize</a>
+                <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+        <div class="page-hero-visual">
+            <div class="video-container">
+                <div class="video-spinner" id="video-spinner">
+                     <div class="spinner"></div>
+                </div>
+                <video id="demo-video" class="hero-video" loop muted playsinline preload="none" poster="{{ url_for('static', filename='Gemini_Generated_Image_ly5ov8ly5ov8ly5o.webp') }}">
+                    <source src="{{ url_for('static', filename='videos/Create_a_second_cinematic_a(2).mp4') }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ OPERATION MODE SELECTOR ════════════════════════ -->
+    <div class="hx-mode-selector" style="display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid var(--hc-border); padding-bottom: 14px;">
+        <a href="/huffman" class="hx-btn hx-btn-ghost" style="text-decoration: none;">
+            <i class="fas fa-lock"></i> Huffman Encoding
+        </a>
+        <a href="/huffman/decoder" class="hx-btn hx-btn-primary" style="text-decoration: none;">
+            <i class="fas fa-unlock"></i> Huffman Decoding
+        </a>
+    </div>
+
+    <!-- ══ MAIN WORKSPACE ══════════════════════════════════ -->
+    <div class="hx-workspace">
+
+        <!-- ── LEFT INPUT PANEL ── -->
+        <div class="hx-panel" id="input-panel">
+            <div class="hx-panel-head">
+                <div class="hx-panel-label">
+                    <i class="fas fa-edit accent"></i>
+                    <span>Code Table & Input</span>
+                </div>
+                <span class="hx-panel-tag">Custom Table</span>
+            </div>
+            <div class="hx-panel-body">
+                <!-- Import Package Area -->
+                <div style="background: rgba(37, 99, 235, 0.05); border: 1px dashed var(--hc-border-accent); border-radius: var(--hc-radius-md); padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-size: 11px; font-weight: 600; color: var(--hc-text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Import from Encoder</span>
+                        <button type="button" class="hx-btn hx-btn-slim" id="btn-import-clipboard" style="padding: 4px 8px; font-size: 10px; border-radius: 4px;">
+                            <i class="fas fa-paste"></i> Paste Clipboard
+                        </button>
+                    </div>
+                    <input type="text" id="import-package-input" class="decoder-text-input" placeholder="Or paste package JSON here..." style="font-size: 12px; padding: 6px 10px;">
+                </div>
+
+                <div>
+                    <div style="font-size: 12px; font-weight: 600; color: var(--hc-text-secondary); margin-bottom: 8px;">Huffman Codes Mapping:</div>
+                    <div class="decoder-table-wrap">
+                        <table class="decoder-table" id="code-table">
+                            <thead>
+                                <tr>
+                                    <th>Character</th>
+                                    <th>Binary Code</th>
+                                    <th style="width: 60px; text-align: center;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                                <!-- Pre-populated items -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" class="hx-btn hx-btn-slim" id="btn-add-row" style="margin-top: 10px;">
+                        <i class="fas fa-plus"></i> Add Row
+                    </button>
+                </div>
+
+                <div>
+                    <label for="binary-sequence-input" style="display: block; font-size: 12px; font-weight: 600; color: var(--hc-text-secondary); margin-bottom: 6px;">Encoded Binary Sequence:</label>
+                    <input type="text" id="binary-sequence-input" class="decoder-text-input" placeholder="Enter encoded binary sequence (e.g. 0101101110)" value="0101101110">
+                </div>
+
+                <div class="hx-action-row" style="margin-top: 6px;">
+                    <button class="hx-btn hx-btn-primary" id="btn-start-decoding" style="width: 100%; justify-content: center;">
+                        <i class="fas fa-play-circle"></i> Start Decoding
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── RIGHT OUTPUT PANEL ── -->
+        <div class="hx-panel" id="visualize-panel">
+            <div class="hx-panel-head">
+                <div class="hx-panel-label">
+                    <i class="fas fa-terminal accent"></i>
+                    <span>Output <span class="accent">Panel</span></span>
+                </div>
+                <button class="hx-btn hx-btn-slim hx-btn-copy" id="btn-copy" disabled style="padding:5px 12px;">
+                    <i class="fas fa-copy"></i>
+                    Copy Output
+                </button>
+            </div>
+            <div class="hx-panel-body">
+                <!-- Idle State Placeholder -->
+                <div class="output-idle" id="output-idle">
+                    <i class="fas fa-arrow-left"></i>
+                    <p>Configure the code table and encoded sequence on the left, then click <strong>Start Decoding</strong> to see the decoded output here.</p>
+                </div>
+
+                <!-- Result State (Hidden initially) -->
+                <div id="output-result" style="display: none; flex-direction: column; gap: 16px;">
+                    <!-- Type badge + timestamp -->
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span class="vs-badge done" id="result-badge" style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 20px; color: var(--hc-green); background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3);">
+                            <i class="fas fa-unlock"></i>
+                            Decoded
+                        </span>
+                        <span style="font-size:11px; color:var(--hc-text-muted);" id="result-time"></span>
+                    </div>
+
+                    <!-- Decoded output block -->
+                    <div>
+                        <div style="margin-bottom:8px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--hc-text-muted); letter-spacing: 0.05em;">Decoded Output</div>
+                        <div style="font-family: monospace; font-size: 16px; background: var(--hc-bg-inset); border: 1px solid var(--hc-border); border-radius: var(--hc-radius-md); padding: 14px; color: var(--hc-green); word-break: break-all; min-height: 48px;" id="result-output">—</div>
+                    </div>
+
+                    <!-- Stats Row -->
+                    <div style="display: flex; gap: 12px; margin-top: 10px;">
+                        <div style="flex: 1; background: var(--hc-bg-inset); border: 1px solid var(--hc-border); border-radius: var(--hc-radius-md); padding: 12px; text-align: center;">
+                            <span id="stat-bits-processed" style="display: block; font-size: 18px; font-weight: 700; color: var(--hc-cyan);">—</span>
+                            <span style="font-size: 10px; color: var(--hc-text-muted); text-transform: uppercase;">Bits Processed</span>
+                        </div>
+                        <div style="flex: 1; background: var(--hc-bg-inset); border: 1px solid var(--hc-border); border-radius: var(--hc-radius-md); padding: 12px; text-align: center;">
+                            <span id="stat-decoded-chars" style="display: block; font-size: 18px; font-weight: 700; color: var(--hc-cyan);">—</span>
+                            <span style="font-size: 10px; color: var(--hc-text-muted); text-transform: uppercase;">Characters Decoded</span>
+                        </div>
+                    </div>
+
+                    <!-- Action for animation -->
+                    <div style="margin-top: 16px;">
+                        <button class="hx-btn hx-btn-primary" id="btn-animate-decode" style="width: 100%; justify-content: center;">
+                            <i class="fas fa-play-circle"></i>
+                            Animate Step-by-Step
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ══ ERROR TOAST ═══════════════════════════════════════ -->
+<div class="hx-toast" id="hx-toast" role="alert">
+    <i class="fas fa-exclamation-circle"></i>
+    <div class="hx-toast-body">
+        <div class="hx-toast-msg" id="toast-msg"></div>
+    </div>
+    <button class="hx-toast-close" id="toast-close"><i class="fas fa-times"></i></button>
+</div>
+
+<!-- ── JAVASCRIPT LOGIC ── -->
+<script>
+(function() {
+    'use strict';
+
+    /* Initial Code Table Values */
+    const initialCodes = [
+        { char: 'A', code: '0' },
+        { char: 'B', code: '10' },
+        { char: 'C', code: '110' },
+        { char: 'D', code: '111' }
+    ];
+
+    /* Dynamic state */
+    let currentDecodedText = "";
+    let currentTable = null;
+    let cleanSeq = "";
+
+    /* DOM References */
+    const tableBody = document.getElementById('table-body');
+    const btnAddRow = document.getElementById('btn-add-row');
+    const btnStartDecoding = document.getElementById('btn-start-decoding');
+    const binaryInput = document.getElementById('binary-sequence-input');
+
+    const outputIdle = document.getElementById('output-idle');
+    const outputResult = document.getElementById('output-result');
+    const resultTime = document.getElementById('result-time');
+    const resultOutput = document.getElementById('result-output');
+    const statBitsProcessed = document.getElementById('stat-bits-processed');
+    const statDecodedChars = document.getElementById('stat-decoded-chars');
+    const btnAnimateDecode = document.getElementById('btn-animate-decode');
+    const btnCopy = document.getElementById('btn-copy');
+
+    const importPackageInput = document.getElementById('import-package-input');
+    const btnImportClipboard = document.getElementById('btn-import-clipboard');
+
+    const toast = document.getElementById('hx-toast');
+    const toastMsg = document.getElementById('toast-msg');
+    const toastClose = document.getElementById('toast-close');
+    let toastTimer = null;
+
+    /* ── POPULATE INITIAL TABLE ── */
+    function populateInitialTable() {
+        tableBody.innerHTML = '';
+        initialCodes.forEach(item => {
+            addRow(item.char, item.code);
+        });
+    }
+
+    function addRow(char = '', code = '') {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <input type="text" class="table-input char-input" maxlength="1" value="${char}" placeholder="e.g. A">
+            </td>
+            <td>
+                <input type="text" class="table-input code-input" value="${code}" placeholder="e.g. 01">
+            </td>
+            <td style="text-align: center;">
+                <button type="button" class="btn-delete-row" title="Delete Row"><i class="fas fa-trash-alt"></i></button>
+            </td>
+        `;
+        tableBody.appendChild(tr);
+
+        // Bind delete row
+        tr.querySelector('.btn-delete-row').addEventListener('click', () => {
+            tr.remove();
+        });
+    }
+
+    btnAddRow.addEventListener('click', () => addRow());
+
+    /* ── TOAST ERROR ── */
+    function showError(msg) {
+        toastMsg.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 5000);
+    }
+    toastClose.addEventListener('click', () => toast.classList.remove('show'));
+
+    /* ── VALIDATION & DECODING ── */
+    function parseCodeTable() {
+        const rows = tableBody.querySelectorAll('tr');
+        const table = {};
+        let hasErrors = false;
+
+        rows.forEach((row, index) => {
+            if (hasErrors) return;
+            const charInput = row.querySelector('.char-input');
+            const codeInput = row.querySelector('.code-input');
+            const charVal = charInput.value; // Keep spaces instead of trimming
+            const codeVal = codeInput.value.trim();
+
+            if (charVal === '') {
+                showError(`Character field in row ${index + 1} must not be empty.`);
+                hasErrors = true;
+                return;
+            }
+            if (codeVal === '') {
+                showError(`Binary code field in row ${index + 1} must not be empty.`);
+                hasErrors = true;
+                return;
+            }
+            // Check character uniqueness
+            if (table[charVal] !== undefined) {
+                showError(`Duplicate character detected: "${charVal}". Duplicate characters are not allowed.`);
+                hasErrors = true;
+                return;
+            }
+            // Check binary validation
+            if (!/^[01]+$/.test(codeVal)) {
+                showError(`Binary code for "${charVal}" must contain only 0 and 1.`);
+                hasErrors = true;
+                return;
+            }
+            // Check duplicate codes
+            if (Object.values(table).includes(codeVal)) {
+                showError(`Duplicate binary code detected: "${codeVal}". Duplicate codes are not allowed.`);
+                hasErrors = true;
+                return;
+            }
+
+            table[charVal] = codeVal;
+        });
+
+        if (hasErrors) return null;
+        return table;
+    }
+
+    function checkPrefixFree(table) {
+        const codes = Object.values(table);
+        for (let i = 0; i < codes.length; i++) {
+            for (let j = 0; j < codes.length; j++) {
+                if (i !== j && codes[j].startsWith(codes[i])) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    function checkDecodable(binaryStr, codeTable) {
+        const cleanStr = binaryStr.replace(/\s+/g, '');
+        if (cleanStr === '') return false;
+
+        const codeMap = {};
+        for (const [char, code] of Object.entries(codeTable)) {
+            codeMap[code] = char;
+        }
+
+        let currentBits = "";
+        for (let i = 0; i < cleanStr.length; i++) {
+            const bit = cleanStr[i];
+            if (bit !== '0' && bit !== '1') return false;
+            currentBits += bit;
+            if (codeMap[currentBits] !== undefined) {
+                currentBits = "";
+            }
+        }
+        return currentBits === "";
+    }
+
+    function decodeText(binaryStr, codeTable) {
+        const codeMap = {};
+        for (const [char, code] of Object.entries(codeTable)) {
+            codeMap[code] = char;
+        }
+
+        let decoded = "";
+        let currentBits = "";
+        for (let i = 0; i < binaryStr.length; i++) {
+            currentBits += binaryStr[i];
+            if (codeMap[currentBits] !== undefined) {
+                decoded += codeMap[currentBits];
+                currentBits = "";
+            }
+        }
+        return decoded;
+    }
+
+    /* ── IMPORT PACKAGE FROM ENCODER ── */
+    function importPackageData(text) {
+        if (!text || text.trim() === '') return;
+        try {
+            const data = JSON.parse(text.trim());
+            if (!data || typeof data !== 'object') {
+                throw new Error("Invalid structure.");
+            }
+            if (!data.codes || typeof data.codes !== 'object') {
+                throw new Error("Missing 'codes' mapping.");
+            }
+            if (data.encoded === undefined) {
+                throw new Error("Missing 'encoded' sequence.");
+            }
+
+            // 1. Populate Table
+            tableBody.innerHTML = '';
+            Object.entries(data.codes).forEach(([char, code]) => {
+                addRow(char, code);
+            });
+
+            // 2. Populate binary sequence
+            binaryInput.value = data.encoded;
+
+            // Clear import field
+            importPackageInput.value = '';
+            
+            // Show success toast
+            toastMsg.innerHTML = '<span style="color: var(--hc-green); font-weight: 600;"><i class="fas fa-check-circle"></i> Package imported successfully!</span>';
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+        } catch (err) {
+            showError("Failed to import package: " + err.message);
+        }
+    }
+
+    btnImportClipboard.addEventListener('click', async () => {
+        try {
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                const text = await navigator.clipboard.readText();
+                importPackageData(text);
+            } else {
+                throw new Error("Clipboard reading API not supported or blocked by browser settings.");
+            }
+        } catch (err) {
+            showError("Could not read clipboard. Please paste the package directly into the text box.");
+        }
+    });
+
+    importPackageInput.addEventListener('input', () => {
+        const val = importPackageInput.value.trim();
+        if (val.startsWith('{')) {
+            importPackageData(val);
+        }
+    });
+
+    /* ── START DECODING CLICK LISTENER ── */
+    btnStartDecoding.addEventListener('click', () => {
+        const codeTable = parseCodeTable();
+        if (!codeTable) return;
+
+        if (!checkPrefixFree(codeTable)) {
+            showError("Invalid Huffman code table: codes must be prefix-free.");
+            return;
+        }
+
+        const rawSeq = binaryInput.value.trim();
+        if (rawSeq === '') {
+            showError("Encoded binary sequence must not be empty.");
+            return;
+        }
+
+        cleanSeq = rawSeq.replace(/\s+/g, '');
+        if (!/^[01]+$/.test(cleanSeq)) {
+            showError("Encoded binary sequence must contain only 0 and 1.");
+            return;
+        }
+
+        if (!checkDecodable(cleanSeq, codeTable)) {
+            showError("Encoded sequence cannot be completely decoded using the supplied table.");
+            return;
+        }
+
+        // Perform decoding
+        currentDecodedText = decodeText(cleanSeq, codeTable);
+        currentTable = codeTable;
+
+        // Setup Workspace UI
+        outputIdle.style.display = 'none';
+        outputResult.style.display = 'flex';
+
+        // Set output text and stats
+        resultOutput.textContent = currentDecodedText;
+        resultTime.textContent = new Intl.DateTimeFormat('en', {
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+        }).format(new Date());
+
+        statBitsProcessed.textContent = cleanSeq.length;
+        statDecodedChars.textContent = currentDecodedText.length;
+
+        // Enable copy and animate
+        btnCopy.disabled = false;
+        btnAnimateDecode.disabled = false;
+
+        // Save states for visualizer page
+        localStorage.setItem('huffman_decode_table', JSON.stringify(currentTable));
+        localStorage.setItem('huffman_decode_sequence', cleanSeq);
+    });
+
+    /* ── COPY OUTPUT ── */
+    btnCopy.addEventListener('click', () => {
+        if (!currentDecodedText) return;
+        navigator.clipboard.writeText(currentDecodedText).then(() => {
+            btnCopy.classList.add('copied');
+            btnCopy.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => {
+                btnCopy.classList.remove('copied');
+                btnCopy.innerHTML = '<i class="fas fa-copy"></i> Copy Output';
+            }, 2000);
+        });
+    });
+
+    /* ── ANIMATION TRIGGER ── */
+    btnAnimateDecode.addEventListener('click', () => {
+        if (!currentTable || !cleanSeq) return;
+        localStorage.setItem('huffman_decode_table', JSON.stringify(currentTable));
+        localStorage.setItem('huffman_decode_sequence', cleanSeq);
+        window.location.href = '/huffman/decoder/visualize';
+    });
+
+    /* ── INITIALIZE PAGE ── */
+    populateInitialTable();
+
+})();
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('demo-video');
+    const spinner = document.getElementById('video-spinner');
+
+    if (video) {
+        const hideSpinner = () => {
+            if (spinner) spinner.classList.add('hidden');
+        };
+        video.addEventListener('loadeddata', hideSpinner);
+        video.addEventListener('playing', hideSpinner);
+        video.addEventListener('waiting', () => {
+            if (spinner) spinner.classList.remove('hidden');
+        });
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    video.play().catch(error => {
+                        console.log('Autoplay was prevented by browser policy:', error);
+                    });
+                } else {
+                    video.pause();
+                }
+            });
+        }, { threshold: 0.15 });
+
+        observer.observe(video);
+    }
+});
+</script>
+
+{% endblock %}

@@ -1,17 +1,123 @@
 import sys
 import os
 from flask import Flask, render_template, send_from_directory, request
-from waitress import serve
+from flask_mail import Mail
+from dotenv import load_dotenv
+
+# Load environment variables from .env before anything else
+load_dotenv()
+
+try:
+    from waitress import serve
+    _has_waitress = True
+except ImportError:
+    _has_waitress = False
 
 from app.routes.graph_routes import graph_bp
 from app.routes.mst_routes import mst_bp
 from app.routes.huffman_routes import huffman_bp
+from app.routes.contact_routes import contact_bp
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_key")
 
 # Explicitly set cache duration (12 hours) regardless of debug mode
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 43200
+
+# -- Flask-Mail Configuration (loaded from .env) --------------------------------
+app.config['MAIL_SERVER']   = os.environ.get('MAIL_SERVER',   'smtp.gmail.com')
+app.config['MAIL_PORT']     = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS']  = os.environ.get('MAIL_USE_TLS',  'True').lower() == 'true'
+app.config['MAIL_USE_SSL']  = os.environ.get('MAIL_USE_SSL',  'False').lower() == 'true'
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', '')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', '')
+app.config['MAIL_DEFAULT_SENDER'] = (
+    'NEC AlgoViz',
+    os.environ.get('MAIL_USERNAME', '')
+)
+
+# Initialise Flask-Mail
+mail = Mail(app)
+
+
+# -- Startup SMTP Configuration Validator --------------------------------------
+def _validate_mail_config():
+    """
+    Runs once at startup.
+    Prints a clear status table showing every SMTP env var.
+    Flags placeholder / empty values without crashing the server.
+    """
+    PLACEHOLDER_USER = "your_sender_gmail@gmail.com"
+    PLACEHOLDER_PASS = "your_16char_app_password"
+
+    username = app.config.get("MAIL_USERNAME", "")
+    password = app.config.get("MAIL_PASSWORD", "")
+    sender   = app.config.get("MAIL_DEFAULT_SENDER", "")
+    admin    = os.environ.get("ADMIN_EMAIL", "24205005@nec.edu.in")
+
+    errors = []
+
+    if not username:
+        errors.append("  [!!] MAIL_USERNAME is EMPTY -- set it to your Gmail address in .env")
+    elif username == PLACEHOLDER_USER:
+        errors.append(
+            "  [!!] MAIL_USERNAME is still the placeholder value: "
+            f"{username!r}\n"
+            "       Replace it with your actual Gmail address in .env"
+        )
+
+    if not password:
+        errors.append("  [!!] MAIL_PASSWORD is EMPTY -- set it to your Gmail App Password in .env")
+    elif password == PLACEHOLDER_PASS:
+        errors.append(
+            "  [!!] MAIL_PASSWORD is still the placeholder value.\n"
+            "       Generate an App Password at https://myaccount.google.com/apppasswords\n"
+            "       and set it in .env as MAIL_PASSWORD"
+        )
+
+    SEP  = "=" * 62
+    DASH = "-" * 62
+
+    print("", flush=True)
+    print(SEP, flush=True)
+    print("  NEC AlgoViz -- SMTP Configuration Check", flush=True)
+    print(SEP, flush=True)
+    print(f"  MAIL_SERVER         : {app.config.get('MAIL_SERVER')}", flush=True)
+    print(f"  MAIL_PORT           : {app.config.get('MAIL_PORT')}", flush=True)
+    print(f"  MAIL_USE_TLS        : {app.config.get('MAIL_USE_TLS')}", flush=True)
+    print(f"  MAIL_USERNAME       : {username!r}", flush=True)
+    print(f"  MAIL_PASSWORD       : {'*' * len(password) if password else '(EMPTY)'}", flush=True)
+    print(f"  MAIL_DEFAULT_SENDER : {sender}", flush=True)
+    print(f"  ADMIN_EMAIL         : {admin!r}", flush=True)
+    print(DASH, flush=True)
+
+    if errors:
+        print("  [ERROR] MAIL CONFIG ERRORS DETECTED -- server will start", flush=True)
+        print("          but email submissions will FAIL until resolved:", flush=True)
+        print("", flush=True)
+        for err in errors:
+            print(err, flush=True)
+        print("", flush=True)
+        print(DASH, flush=True)
+        print("  HOW TO FIX:", flush=True)
+        print("  1. Open .env in the project root", flush=True)
+        print("  2. Set  MAIL_USERNAME=your_actual_gmail@gmail.com", flush=True)
+        print("  3. Set  MAIL_PASSWORD=xxxx xxxx xxxx xxxx  (App Password)", flush=True)
+        print("  4. Get an App Password:", flush=True)
+        print("     -> https://myaccount.google.com/apppasswords", flush=True)
+        print("  5. Restart the server after saving .env", flush=True)
+    else:
+        print("  [OK] MAIL_USERNAME       : loaded correctly", flush=True)
+        print("  [OK] MAIL_PASSWORD       : loaded correctly", flush=True)
+        print("  [OK] MAIL_DEFAULT_SENDER : loaded correctly", flush=True)
+        print("  [OK] ADMIN_EMAIL         : 24205005@nec.edu.in", flush=True)
+        print("  [OK] SMTP config valid -- ready to send emails", flush=True)
+
+    print(SEP, flush=True)
+    print("", flush=True)
+
+
+_validate_mail_config()
 
 
 @app.after_request
@@ -35,6 +141,7 @@ def utility_processor():
 app.register_blueprint(graph_bp)
 app.register_blueprint(mst_bp)
 app.register_blueprint(huffman_bp)
+app.register_blueprint(contact_bp)
 
 
 # NEW LANDING PAGE
@@ -76,5 +183,9 @@ if __name__ == "__main__":
         print("Starting Flask Built-in Development Server (Debug Mode)...", flush=True)
         app.run(debug=True, host="127.0.0.1", port=5000)
     else:
-        print("Starting Production WSGI Server (Waitress) on http://127.0.0.1:5000 ...", flush=True)
-        serve(app, host="127.0.0.1", port=5000, threads=8)
+        if _has_waitress:
+            print("Starting Production WSGI Server (Waitress) on http://127.0.0.1:5000 ...", flush=True)
+            serve(app, host="127.0.0.1", port=5000, threads=8)
+        else:
+            print("Waitress not found. Starting Flask Built-in Server on http://127.0.0.1:5000 ...", flush=True)
+            app.run(host="127.0.0.1", port=5000)

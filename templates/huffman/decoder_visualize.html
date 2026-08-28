@@ -1,0 +1,957 @@
+{% extends "layout.html" %}
+
+{% block title %}Huffman Decoding Animator – AlgoViz Pro{% endblock %}
+
+{% block breadcrumbs %}
+<span>Home</span>
+<i class="fas fa-chevron-right breadcrumb-separator"></i>
+<a href="/huffman" style="color: var(--text-secondary); text-decoration: none;">Huffman Coding</a>
+<i class="fas fa-chevron-right breadcrumb-separator"></i>
+<a href="/huffman/decoder" style="color: var(--text-secondary); text-decoration: none;">Decoder</a>
+<i class="fas fa-chevron-right breadcrumb-separator"></i>
+<span>Visualize</span>
+{% endblock %}
+
+{% block content %}
+<style>
+/* ──────────────────────────────────────────────────
+   DESIGN TOKENS (matching main visualizer style)
+   ────────────────────────────────────────────────── */
+:root {
+    --hv-panel:   #111827;
+    --hv-inset:   #0a0e18;
+    --hv-border:  rgba(255,255,255,0.07);
+    --hv-indigo:  #6366f1;
+    --hv-cyan:    #22d3ee;
+    --hv-green:   #34d399;
+    --hv-red:     #ef4444;
+    --hv-amber:   #fbbf24;
+    --hv-t1:      #f1f5f9;
+    --hv-t2:      #94a3b8;
+    --hv-t3:      #475569;
+}
+
+body.light-mode-preview {
+    --hv-panel:   #ffffff;
+    --hv-inset:   #f8fafc;
+    --hv-border:  #e2e8f0;
+    --hv-indigo:  #2563eb;
+    --hv-cyan:    #0ea5e9;
+    --hv-green:   #10b981;
+    --hv-red:     #ef4444;
+    --hv-amber:   #f59e0b;
+    --hv-t1:      #0f172a;
+    --hv-t2:      #475569;
+    --hv-t3:      #cbd5e1;
+}
+
+body.light-mode-preview .vb-btn {
+    background: rgba(0, 0, 0, 0.04) !important;
+}
+body.light-mode-preview .vb-btn:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ──────────────────────────────────────────────────
+   PAGE WRAPPER
+   ────────────────────────────────────────────────── */
+.viz-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 100%;
+    padding-bottom: 48px;
+}
+
+/* ──────────────────────────────────────────────────
+   CONTROL BAR
+   ────────────────────────────────────────────────── */
+.viz-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: var(--hv-panel);
+    border: 1px solid var(--hv-border);
+    border-radius: 12px;
+    padding: 12px 18px;
+}
+.viz-bar-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--hv-t1);
+    margin-right: auto;
+}
+.vb-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    border-radius: 8px;
+    border: 1px solid var(--hv-border);
+    background: rgba(255,255,255,0.04);
+    color: var(--hv-t2);
+    cursor: pointer;
+    transition: all 0.18s;
+    text-decoration: none;
+}
+.vb-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.08);
+    color: var(--hv-t1);
+}
+.vb-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+.vb-btn.accent {
+    background: var(--hv-indigo);
+    border-color: var(--hv-indigo);
+    color: #fff;
+}
+.vb-btn.accent:hover:not(:disabled) {
+    background: #818cf8;
+    border-color: #818cf8;
+}
+.vb-speed {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--hv-t3);
+}
+.vb-speed input[type=range] {
+    width: 96px;
+    accent-color: var(--hv-indigo);
+    cursor: pointer;
+}
+.vb-counter {
+    font-size: 12px;
+    color: var(--hv-t3);
+    min-width: 56px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ──────────────────────────────────────────────────
+   STATUS BAR
+   ────────────────────────────────────────────────── */
+.viz-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--hv-panel);
+    border: 1px solid var(--hv-border);
+    border-radius: 10px;
+    padding: 11px 18px;
+    font-size: 13px;
+}
+.vs-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.vs-badge.init   { color: var(--hv-cyan);   background: rgba(34,211,238,.12);  border: 1px solid rgba(34,211,238,.3); }
+.vs-badge.select { color: var(--hv-amber);  background: rgba(251,191,36,.12);  border: 1px solid rgba(251,191,36,.3); }
+.vs-badge.merge  { color: var(--hv-green);  background: rgba(52,211,153,.12);  border: 1px solid rgba(52,211,153,.3); }
+.vs-badge.insert { color: var(--hv-cyan);   background: rgba(34,211,238,.12);  border: 1px solid rgba(34,211,238,.3); }
+.vs-badge.ready  { color: var(--hv-amber);  background: rgba(251,191,36,.12);  border: 1px solid rgba(251,191,36,.3); }
+.vs-badge.done   { color: var(--hv-green);  background: rgba(52,211,153,.12);  border: 1px solid rgba(52,211,153,.3); }
+.vs-sep  { color: var(--hv-border); }
+.vs-msg  { color: var(--hv-t2); font-size: 13px; }
+
+/* ──────────────────────────────────────────────────
+   MAIN CANVAS SHELL
+   ────────────────────────────────────────────────── */
+.viz-shell {
+    width: 100%;
+    background: var(--hv-panel);
+    border: 1px solid var(--hv-border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.hv-canvas {
+    position: relative;
+    width: 100%;
+    min-height: 420px;
+    overflow: hidden;
+}
+
+.hv-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: visible;
+}
+.tree-edge {
+    stroke: rgba(99, 102, 241, 0.4);
+    stroke-width: 2;
+    stroke-linecap: round;
+    transition: stroke 0.3s, stroke-width 0.3s;
+}
+.edge-lbl {
+    fill: var(--hv-t3);
+    font-size: 11px;
+    font-family: monospace;
+    font-weight: 700;
+}
+
+.hv-node {
+    position: absolute;
+    z-index: 10;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+    cursor: default;
+    user-select: none;
+    transform-origin: 0 0;
+    background: #1e3a5f;
+    border: 2px solid #3b82f6;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.25);
+    transition: left 0.45s ease, top 0.45s ease, opacity 0.25s ease, transform 0.25s ease, background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.hv-node .nv-char { font-size: 14px; font-weight: 700; color: #e2e8f0; line-height: 1; }
+.hv-node.s-tree {
+    background: #0a221a;
+    border: 2px solid var(--hv-green);
+    box-shadow: 0 2px 10px rgba(52,211,153,0.2);
+}
+.hv-node.s-merged {
+    background: #14103a;
+    border: 2px solid var(--hv-indigo);
+    box-shadow: 0 2px 8px rgba(99,102,241,0.2);
+}
+.hv-node.s-selected {
+    background: #450a0a;
+    border: 2px solid var(--hv-red);
+    box-shadow: 0 0 18px rgba(239,68,68,0.55);
+    transform: scale(1.1) !important;
+    z-index: 15;
+}
+.hv-canvas.no-anim .hv-node {
+    transition: none !important;
+}
+
+/* ──────────────────────────────────────────────────
+   ADDITIONAL INFO SECTIONS (Bit tracking & live output)
+   ────────────────────────────────────────────────── */
+.bit-sequence-container {
+    background: var(--hv-panel);
+    border: 1px solid var(--hv-border);
+    border-radius: 12px;
+    padding: 16px;
+}
+.bit-sequence-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--hv-t3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+}
+.bit-sequence {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 22px;
+    font-weight: bold;
+}
+.bit-sequence .bit {
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: var(--hv-t1);
+    transition: all 0.2s;
+}
+.bit-sequence .bit.processed {
+    opacity: 0.25;
+}
+.bit-sequence .bit.current {
+    color: #000;
+    background: var(--hv-amber);
+    transform: scale(1.25);
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.7);
+}
+
+.live-decoded-container {
+    background: var(--hv-panel);
+    border: 1px solid var(--hv-border);
+    border-radius: 12px;
+    padding: 16px;
+}
+.live-decoded-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--hv-t3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+}
+.live-decoded-val {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--hv-green);
+    min-height: 36px;
+    word-break: break-all;
+}
+
+/* ── Stats Summary card ── */
+.stats-summary-card {
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.stats-summary-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--hv-t1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.stats-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+@media (max-width: 768px) {
+    .stats-summary-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.stats-summary-item {
+    background: var(--hv-inset);
+    border: 1px solid var(--hv-border);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+}
+.stats-summary-item .lbl {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--hv-t3);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    letter-spacing: 0.03em;
+}
+.stats-summary-item .val {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--hv-t1);
+    word-break: break-all;
+}
+</style>
+
+<div class="viz-page">
+
+    <!-- ── CONTROL BAR ──────────────────────────────── -->
+    <div class="viz-bar">
+        <a href="/huffman/decoder" class="vb-btn" id="vb-back">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+        <span class="viz-bar-title">Huffman Decoding Step Animator</span>
+
+        <button class="vb-btn" id="btn-prev" disabled>
+            <i class="fas fa-step-backward"></i> Prev
+        </button>
+        <button class="vb-btn accent" id="btn-play">
+            <i class="fas fa-play"></i> Play
+        </button>
+        <button class="vb-btn accent" id="btn-pause" style="display:none;">
+            <i class="fas fa-pause"></i> Pause
+        </button>
+        <button class="vb-btn" id="btn-next" disabled>
+            <i class="fas fa-step-forward"></i> Next
+        </button>
+
+        <div class="vb-speed">
+            <i class="fas fa-gauge-high" style="font-size:10px;"></i>
+            Speed
+            <input type="range" id="speed-slider" min="300" max="2500" value="1000" dir="rtl">
+        </div>
+        <span class="vb-counter" id="step-counter">— / —</span>
+    </div>
+
+    <!-- ── STATUS BAR ───────────────────────────────── -->
+    <div class="viz-status">
+        <span class="vs-badge ready" id="vs-badge">
+            <i class="fas fa-circle-notch"></i> Ready
+        </span>
+        <span class="vs-sep">|</span>
+        <span class="vs-msg" id="vs-msg">Ready to traverse Huffman tree.</span>
+    </div>
+
+    <!-- ── MAIN CANVAS ──────────────────────────────── -->
+    <div class="viz-shell">
+        <div class="hv-canvas" id="hv-canvas">
+            <!-- SVG for tree edges -->
+            <svg class="hv-svg" id="hv-svg"></svg>
+        </div>
+    </div>
+
+    <!-- ── BIT STREAM SEQUENCING ── -->
+    <div class="bit-sequence-container">
+        <div class="bit-sequence-title">Encoded Binary Stream Traversal</div>
+        <div class="bit-sequence" id="bit-sequence-display"></div>
+    </div>
+
+    <!-- ── LIVE DECODED VALUE ── -->
+    <div class="live-decoded-container">
+        <div class="live-decoded-label">Live Decoded Output</div>
+        <div class="live-decoded-val" id="live-decoded-val">""</div>
+    </div>
+
+    <!-- ── STATS SUMMARY CARD ── -->
+    <div class="stats-summary-card" id="stats-summary-card" style="display: none;">
+        <div class="stats-summary-title">
+            <i class="fas fa-check-circle" style="color: var(--hv-green);"></i>
+            <span>Decoding Step-by-Step Completed</span>
+        </div>
+        <div class="stats-summary-grid">
+            <div class="stats-summary-item">
+                <div class="lbl">Encoded Binary Sequence</div>
+                <div class="val" id="stat-encoded-binary">—</div>
+            </div>
+            <div class="stats-summary-item">
+                <div class="lbl">Decoded Text Output</div>
+                <div class="val" id="stat-decoded-text">—</div>
+            </div>
+            <div class="stats-summary-item">
+                <div class="lbl">Characters Decoded</div>
+                <div class="val" id="stat-decoded-chars">—</div>
+            </div>
+            <div class="stats-summary-item">
+                <div class="lbl">Bits Traversed</div>
+                <div class="val" id="stat-bits-processed">—</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- JAVASCRIPT ANIMATOR ENGINE -->
+<script>
+(function() {
+    'use strict';
+
+    /* Layout settings */
+    const NODE_R = 25;
+    const NODE_D = 50;
+    const TREE_LEVEL_H = 75;
+    const TREE_X_GAP = 55;
+
+    /* Read package settings from localStorage */
+    const codeTable = (() => {
+        try { return JSON.parse(localStorage.getItem('huffman_decode_table') || '{}'); }
+        catch (_) { return {}; }
+    })();
+    const cleanSeq = localStorage.getItem('huffman_decode_sequence') || '';
+
+    /* Dynamic registries & states */
+    let treeNodes = {};
+    let nodePositions = {};
+    const registry = new Map();
+    let stepsData = [];
+    let currentStep = -1;
+    let playing = false;
+    let timer = null;
+
+    /* DOM References */
+    const canvas = document.getElementById('hv-canvas');
+    const svgEl = document.getElementById('hv-svg');
+    const vsBadge = document.getElementById('vs-badge');
+    const vsMsg = document.getElementById('vs-msg');
+    const stepCounter = document.getElementById('step-counter');
+
+    const btnPrev = document.getElementById('btn-prev');
+    const btnPlay = document.getElementById('btn-play');
+    const btnPause = document.getElementById('btn-pause');
+    const btnNext = document.getElementById('btn-next');
+    const speedSlider = document.getElementById('speed-slider');
+
+    /* ── VALIDATION & TREES BUILDING ── */
+    function buildTreeNodes(table) {
+        const nodes = {};
+        nodes[""] = { id: "", char: null, leftId: null, rightId: null };
+
+        for (const [char, code] of Object.entries(table)) {
+            let currentPath = "";
+            for (let i = 0; i < code.length; i++) {
+                const bit = code[i];
+                const nextPath = currentPath + bit;
+                if (!nodes[nextPath]) {
+                    nodes[nextPath] = {
+                        id: nextPath,
+                        char: null,
+                        leftId: null,
+                        rightId: null
+                    };
+                }
+                if (bit === '0') {
+                    nodes[currentPath].leftId = nextPath;
+                } else {
+                    nodes[currentPath].rightId = nextPath;
+                }
+                currentPath = nextPath;
+            }
+            nodes[currentPath].char = char;
+        }
+        return nodes;
+    }
+
+    /* ── ASSIGN COLUMNS & COORDS FOR RENDER ── */
+    function assignLeafCols(id, depth, ctr, pos) {
+        const n = treeNodes[id];
+        if (!n) return;
+        pos[id] = { depth };
+
+        const isLeaf = !n.leftId && !n.rightId;
+        if (isLeaf) {
+            pos[id].col = ctr.x;
+            ctr.x += 1;
+            return;
+        }
+
+        if (n.leftId)  assignLeafCols(n.leftId,  depth + 1, ctr, pos);
+        if (n.rightId) assignLeafCols(n.rightId, depth + 1, ctr, pos);
+
+        const lc = n.leftId  && pos[n.leftId]  ? pos[n.leftId].col  : null;
+        const rc = n.rightId && pos[n.rightId] ? pos[n.rightId].col : null;
+
+        pos[id].col = (lc !== null && rc !== null) ? (lc + rc) / 2
+                    : (lc !== null) ? lc
+                    : rc;
+    }
+
+    function drawNodeEl(n, id) {
+        const el = document.createElement('div');
+        el.className = 'hv-node';
+        el.id = 'hvn-' + id;
+
+        const ch = n.char === null ? '∗' : n.char === ' ' ? '␣' : n.char;
+        el.innerHTML = `<div class="nv-char">${ch}</div>`;
+        canvas.appendChild(el);
+        registry.set(id, { el });
+        return el;
+    }
+
+    function renderDecoderTree() {
+        // Clear old nodes
+        canvas.querySelectorAll('.hv-node').forEach(el => el.remove());
+        registry.clear();
+        nodePositions = {};
+
+        const rootId = "";
+        const pos = {};
+        assignLeafCols(rootId, 0, { x: 0 }, pos);
+
+        const W = canvas.offsetWidth || 600;
+        const cols = Object.values(pos).map(p => p.col);
+        const maxCol = Math.max(...cols, 0);
+        const xSpac = Math.min(TREE_X_GAP + 12, (W - 48) / Math.max(maxCol + 1, 1));
+        const xOff = (W - maxCol * xSpac) / 2;
+
+        const maxDepth = Math.max(...Object.values(pos).map(p => p.depth), 0);
+        const startY = 32;
+        const canvasH = startY + (maxDepth + 1) * TREE_LEVEL_H + NODE_D + 20;
+        canvas.style.minHeight = canvasH + 'px';
+        svgEl.setAttribute('height', canvasH);
+
+        for (const [id, p] of Object.entries(pos)) {
+            const topLeftX = xOff + p.col * xSpac - NODE_R;
+            const topLeftY = startY + p.depth * TREE_LEVEL_H;
+            
+            drawNodeEl(treeNodes[id], id);
+            
+            const el = registry.get(id).el;
+            el.style.left = topLeftX + 'px';
+            el.style.top = topLeftY + 'px';
+            el.style.opacity = '1';
+            el.style.transform = 'scale(1.0)';
+
+            nodePositions[id] = {
+                cx: topLeftX + NODE_R,
+                cy: topLeftY + NODE_R
+            };
+        }
+    }
+
+    function drawAllEdges() {
+        svgEl.innerHTML = '';
+        const frag = document.createDocumentFragment();
+
+        for (const [id, node] of Object.entries(treeNodes)) {
+            const parentPos = nodePositions[id];
+            if (!parentPos) continue;
+
+            const px = parentPos.cx;
+            const py = parentPos.cy;
+
+            if (node.leftId) {
+                const childPos = nodePositions[node.leftId];
+                if (childPos) {
+                    const cx = childPos.cx;
+                    const cy = childPos.cy;
+
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', px);
+                    line.setAttribute('y1', py + NODE_R);
+                    line.setAttribute('x2', cx);
+                    line.setAttribute('y2', cy - NODE_R);
+                    line.setAttribute('class', 'tree-edge');
+                    line.setAttribute('id', `edge_${id}_to_${node.leftId}`);
+                    frag.appendChild(line);
+
+                    const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    txt.setAttribute('x', (px + cx) / 2 - 12);
+                    txt.setAttribute('y', (py + cy) / 2 + 4);
+                    txt.setAttribute('class', 'edge-lbl');
+                    txt.textContent = '0';
+                    frag.appendChild(txt);
+                }
+            }
+            if (node.rightId) {
+                const childPos = nodePositions[node.rightId];
+                if (childPos) {
+                    const cx = childPos.cx;
+                    const cy = childPos.cy;
+
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', px);
+                    line.setAttribute('y1', py + NODE_R);
+                    line.setAttribute('x2', cx);
+                    line.setAttribute('y2', cy - NODE_R);
+                    line.setAttribute('class', 'tree-edge');
+                    line.setAttribute('id', `edge_${id}_to_${node.rightId}`);
+                    frag.appendChild(line);
+
+                    const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    txt.setAttribute('x', (px + cx) / 2 + 6);
+                    txt.setAttribute('y', (py + cy) / 2 + 4);
+                    txt.setAttribute('class', 'edge-lbl');
+                    txt.textContent = '1';
+                    frag.appendChild(txt);
+                }
+            }
+        }
+        svgEl.appendChild(frag);
+    }
+
+    /* ── GENERATE DECODING ANIMATION STEPS ── */
+    function generateDecodingSteps(binaryStr, table) {
+        const steps = [];
+        steps.push({
+            bitIndex: -1,
+            currentNodeId: "",
+            highlightEdge: null,
+            message: "Start at the root of the Huffman tree.",
+            decodedText: "",
+            action: "init"
+        });
+
+        const codeMap = {};
+        for (const [char, code] of Object.entries(table)) {
+            codeMap[code] = char;
+        }
+
+        let currentPath = "";
+        let decodedText = "";
+
+        for (let i = 0; i < binaryStr.length; i++) {
+            const bit = binaryStr[i];
+            const prevPath = currentPath;
+            const nextPath = currentPath + bit;
+
+            // 1. Read Bit
+            steps.push({
+                bitIndex: i,
+                currentNodeId: prevPath,
+                highlightEdge: { from: prevPath, to: nextPath, bit: bit },
+                message: `Reading bit: ${bit}`,
+                decodedText: decodedText,
+                action: "read_bit"
+            });
+
+            // 2. Move to Child
+            const dir = bit === '0' ? 'left' : 'right';
+            steps.push({
+                bitIndex: i,
+                currentNodeId: nextPath,
+                highlightEdge: null,
+                message: `${bit} → Move to ${dir} child`,
+                decodedText: decodedText,
+                action: "move"
+            });
+
+            currentPath = nextPath;
+            const ch = codeMap[currentPath];
+
+            if (ch !== undefined) {
+                decodedText += ch;
+                // 3. Leaf reached
+                steps.push({
+                    bitIndex: i,
+                    currentNodeId: currentPath,
+                    highlightEdge: null,
+                    message: `Leaf node reached. Decoded character: ${ch === ' ' ? 'space' : ch}`,
+                    decodedText: decodedText,
+                    action: "leaf"
+                });
+
+                // 4. Return to root
+                currentPath = "";
+                steps.push({
+                    bitIndex: i,
+                    currentNodeId: "",
+                    highlightEdge: null,
+                    message: "Returning to root",
+                    decodedText: decodedText,
+                    action: "return_root"
+                });
+            }
+        }
+
+        // Final completion step
+        steps.push({
+            bitIndex: binaryStr.length,
+            currentNodeId: "",
+            highlightEdge: null,
+            message: "Decoding Completed",
+            decodedText: decodedText,
+            action: "completed"
+        });
+
+        return steps;
+    }
+
+    /* ── PLAYBACK CONTROLS ── */
+    function syncButtons() {
+        btnPrev.disabled = currentStep <= -1;
+        btnNext.disabled = currentStep >= stepsData.length - 1;
+    }
+
+    function doNext() {
+        if (currentStep < stepsData.length - 1) {
+            currentStep++;
+            renderStep(currentStep);
+            syncButtons();
+        } else {
+            stopPlay();
+        }
+    }
+
+    function doPrev() {
+        if (currentStep > -1) {
+            stopPlay();
+            currentStep--;
+            replayTo(currentStep);
+            syncButtons();
+        }
+    }
+
+    function startPlay() {
+        if (!stepsData.length) return;
+        if (currentStep >= stepsData.length - 1) {
+            replayTo(-1);
+            currentStep = -1;
+        }
+        playing = true;
+        btnPlay.style.display = 'none';
+        btnPause.style.display = 'inline-flex';
+        timer = setInterval(doNext, parseInt(speedSlider.value));
+    }
+
+    function stopPlay() {
+        playing = false;
+        clearInterval(timer);
+        btnPlay.style.display = 'inline-flex';
+        btnPause.style.display = 'none';
+    }
+
+    btnNext.addEventListener('click', () => { stopPlay(); doNext(); });
+    btnPrev.addEventListener('click', doPrev);
+    btnPlay.addEventListener('click', startPlay);
+    btnPause.addEventListener('click', stopPlay);
+    speedSlider.addEventListener('input', () => {
+        if (playing) { stopPlay(); startPlay(); }
+    });
+
+    /* ── STATUS UPDATER ── */
+    const STATUS_META = {
+        ready:  { icon: 'fa-circle-notch', class: 'ready' },
+        init:   { icon: 'fa-layer-group',  class: 'init' },
+        select: { icon: 'fa-hand-pointer', class: 'select' },
+        merge:  { icon: 'fa-code-branch',  class: 'merge' },
+        insert: { icon: 'fa-right-to-bracket', class: 'insert' },
+        done:   { icon: 'fa-check-circle', class: 'done' }
+    };
+
+    function updateStatus(state, msg) {
+        const meta = STATUS_META[state] || STATUS_META.ready;
+        vsBadge.className = `vs-badge ${meta.class}`;
+        vsBadge.innerHTML = `<i class="fas ${meta.icon}"></i> ${state.toUpperCase()}`;
+        vsMsg.textContent = msg;
+    }
+
+    /* ── RENDER BIT TRACKER SEQUENCE ── */
+    function renderBitSequence(seq, activeIdx, action) {
+        const display = document.getElementById('bit-sequence-display');
+        display.innerHTML = '';
+        
+        for (let i = 0; i < seq.length; i++) {
+            const span = document.createElement('span');
+            span.className = 'bit';
+            span.textContent = seq[i];
+
+            if (action === 'completed') {
+                span.classList.add('processed');
+            } else if (activeIdx > -1) {
+                if (i < activeIdx) {
+                    span.classList.add('processed');
+                } else if (i === activeIdx) {
+                    if (action === 'return_root') {
+                        span.classList.add('processed');
+                    } else {
+                        span.classList.add('current');
+                    }
+                }
+            }
+            display.appendChild(span);
+        }
+    }
+
+    function applyState(nodeId, state) {
+        const entry = registry.get(nodeId);
+        if (!entry) return;
+        entry.el.className = 'hv-node' + (state ? ' s-' + state : '');
+    }
+
+    /* ── RENDER STEP ── */
+    function renderStep(index) {
+        // Reset all nodes
+        document.querySelectorAll('.hv-node').forEach(el => {
+            el.className = 'hv-node';
+        });
+        // Clear edge colors
+        document.querySelectorAll('.tree-edge').forEach(line => {
+            line.style.stroke = '';
+            line.style.strokeWidth = '';
+        });
+
+        // Set default tree styles
+        for (const [id, node] of Object.entries(treeNodes)) {
+            const isLeaf = !node.leftId && !node.rightId;
+            applyState(id, isLeaf ? 'tree' : 'merged');
+        }
+
+        if (index < 0) {
+            stepCounter.textContent = `0 / ${stepsData.length - 1}`;
+            updateStatus('ready', 'Start at the root of the Huffman tree.');
+            applyState("", 'selected');
+            renderBitSequence(cleanSeq, -1, 'init');
+            document.getElementById('live-decoded-val').textContent = '""';
+            document.getElementById('stats-summary-card').style.display = 'none';
+            return;
+        }
+
+        const step = stepsData[index];
+        stepCounter.textContent = `${index} / ${stepsData.length - 1}`;
+
+        let badge = 'init';
+        if (step.action === 'read_bit') badge = 'select';
+        if (step.action === 'move') badge = 'insert';
+        if (step.action === 'leaf') badge = 'merge';
+        if (step.action === 'return_root') badge = 'ready';
+        if (step.action === 'completed') badge = 'done';
+
+        updateStatus(badge, step.message);
+        renderBitSequence(cleanSeq, step.bitIndex, step.action);
+
+        const decodedDisplay = step.decodedText === "" ? '""' : `"${step.decodedText}"`;
+        document.getElementById('live-decoded-val').textContent = decodedDisplay;
+
+        if (step.currentNodeId !== null) {
+            applyState(step.currentNodeId, 'selected');
+        }
+
+        if (step.highlightEdge) {
+            const parent = step.highlightEdge.from;
+            const child = step.highlightEdge.to;
+            const edge = document.getElementById(`edge_${parent}_to_${child}`);
+            if (edge) {
+                edge.style.stroke = 'var(--hv-amber)';
+                edge.style.strokeWidth = '4.5px';
+            }
+        }
+
+        if (step.action === 'completed') {
+            document.getElementById('stats-summary-card').style.display = 'flex';
+            document.getElementById('stat-encoded-binary').textContent = cleanSeq;
+            document.getElementById('stat-decoded-text').textContent = step.decodedText;
+            document.getElementById('stat-decoded-chars').textContent = step.decodedText.length;
+            document.getElementById('stat-bits-processed').textContent = cleanSeq.length;
+        } else {
+            document.getElementById('stats-summary-card').style.display = 'none';
+        }
+    }
+
+    function replayTo(target) {
+        canvas.classList.add('no-anim');
+        for (let i = -1; i <= target; i++) {
+            renderStep(i);
+        }
+        requestAnimationFrame(() => canvas.classList.remove('no-anim'));
+    }
+
+    function handleResize() {
+        renderDecoderTree();
+        drawAllEdges();
+        renderStep(currentStep);
+    }
+
+    /* ── INITIALIZE ANIMATION ── */
+    if (!cleanSeq || Object.keys(codeTable).length === 0) {
+        updateStatus('ready', 'No valid Huffman codes or sequence found. Go back and select "Start Decoding".');
+        return;
+    }
+
+    treeNodes = buildTreeNodes(codeTable);
+    renderDecoderTree();
+    drawAllEdges();
+
+    window.addEventListener('resize', handleResize);
+
+    stepsData = generateDecodingSteps(cleanSeq, codeTable);
+    currentStep = -1;
+    renderStep(-1);
+    syncButtons();
+
+})();
+</script>
+{% endblock %}
