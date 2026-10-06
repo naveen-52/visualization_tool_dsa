@@ -17,6 +17,8 @@ from app.routes.graph_routes import graph_bp
 from app.routes.mst_routes import mst_bp
 from app.routes.huffman_routes import huffman_bp
 from app.routes.contact_routes import contact_bp
+from app.routes.api_routes import api_bp
+
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_key")
@@ -142,6 +144,8 @@ app.register_blueprint(graph_bp)
 app.register_blueprint(mst_bp)
 app.register_blueprint(huffman_bp)
 app.register_blueprint(contact_bp)
+app.register_blueprint(api_bp)
+
 
 
 # NEW LANDING PAGE
@@ -175,6 +179,30 @@ def dashboard():
 @app.route("/about")
 def about():
     return render_template("about.html")
+
+
+# React SPA routes
+@app.route("/react")
+@app.route("/react/<path:path>")
+def serve_react(path=""):
+    dist_dir = os.path.join(app.root_path, "..", "frontend", "dist")
+    if not os.path.exists(dist_dir):
+        dist_dir = os.path.join(app.root_path, "dist")
+
+    if os.path.exists(dist_dir):
+        if path != "" and os.path.exists(os.path.join(dist_dir, path)):
+            return send_from_directory(dist_dir, path)
+        return send_from_directory(dist_dir, "index.html")
+    return "React build not found. Run 'npm run build' inside the frontend directory first.", 404
+
+
+@app.route("/assets/<path:filename>")
+def serve_react_assets(filename):
+    dist_assets = os.path.join(app.root_path, "..", "frontend", "dist", "assets")
+    if not os.path.exists(dist_assets):
+        dist_assets = os.path.join(app.root_path, "dist", "assets")
+    return send_from_directory(dist_assets, filename)
+
 
 
 if __name__ == "__main__":
