@@ -3,15 +3,13 @@ import {
   Network, 
   Play, 
   Palette, 
-  RotateCcw, 
   Shuffle, 
   CheckCircle2, 
   AlertCircle, 
   Loader2, 
   Layers, 
   Sparkles,
-  Check,
-  Eye
+  Check
 } from 'lucide-react';
 import { 
   apiGenerateGraph, 
@@ -49,7 +47,6 @@ export const GraphColoringPage: React.FC = () => {
   const [allCombinations, setAllCombinations] = useState<AllColoringsResponse | null>(null);
   
   // Manual coloring state
-  const [manualMode, setManualMode] = useState(false);
   const [manualColors, setManualColors] = useState<Record<string, string>>({});
   const [selectedPaletteColor, setSelectedPaletteColor] = useState(COLOR_PALETTE[0].hex);
   const [manualValidation, setManualValidation] = useState<{ valid?: boolean; conflicts?: any[]; message?: string } | null>(null);

@@ -8,8 +8,7 @@ import {
   Zap, 
   ShieldCheck, 
   Layers,
-  ChevronRight,
-  BarChart3
+  ChevronRight
 } from 'lucide-react';
 import { AppPage } from '../types';
 

@@ -6,12 +6,7 @@ import {
   SkipForward, 
   SkipBack, 
   RotateCcw, 
-  CheckCircle2, 
-  Loader2, 
-  Layers, 
-  TrendingUp,
-  Settings,
-  Sparkles
+  Loader2
 } from 'lucide-react';
 import { apiRunMST } from '../api/client';
 import { MSTRunResponse, MSTStep } from '../types';

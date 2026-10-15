@@ -4,12 +4,10 @@ import {
   BookOpen, 
   Award, 
   Code2, 
-  Users, 
   Lightbulb, 
   Network, 
   GitBranch, 
-  Binary,
-  CheckCircle2
+  Binary
 } from 'lucide-react';
 
 export const AboutPage: React.FC = () => {

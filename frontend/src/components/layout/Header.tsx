@@ -1,9 +1,6 @@
 import React from 'react';
 import { 
   Menu, 
-  Activity, 
-  ExternalLink, 
-  Sparkles,
   Github,
   Mail
 } from 'lucide-react';

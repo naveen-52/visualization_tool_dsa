@@ -35,9 +35,21 @@ def process_encode(text: str, include_steps: bool = True) -> dict:
     # Generate the encoded string
     encoded_text = "".join(codes[char] for char in text) if text and codes else ""
     
+    # Calculate statistics
+    frequencies = {char: text.count(char) for char in set(text)}
+    original_bits = len(text) * 8
+    compressed_bits = len(encoded_text)
+    compression_ratio = round(original_bits / compressed_bits, 2) if compressed_bits > 0 else 1.0
+    
     response = {
         "encoded": encoded_text,
+        "encoded_text": encoded_text,
         "codes": codes,
+        "frequencies": frequencies,
+        "frequency_table": [{"char": char, "freq": freq, "code": codes.get(char, "")} for char, freq in sorted(frequencies.items())],
+        "original_bits": original_bits,
+        "compressed_bits": compressed_bits,
+        "compression_ratio": compression_ratio,
         "tree": tree
     }
     
@@ -51,10 +63,11 @@ def process_decode(encoded_text: str, codes: dict) -> dict:
     Orchestrates the Huffman decoding process.
     """
     if not encoded_text or not codes:
-        return {"decoded": ""}
+        return {"decoded": "", "decoded_text": ""}
         
     decoded_text = decode_huffman(encoded_text, codes)
     
     return {
-        "decoded": decoded_text
+        "decoded": decoded_text,
+        "decoded_text": decoded_text
     }

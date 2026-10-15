@@ -39,6 +39,7 @@ def get_graph_from_session():
 
 # ---------------- GRAPH COLORING HOME ----------------
 
+@graph_bp.route("/graph")
 @graph_bp.route("/graph-coloring")
 def graph_coloring_index():
     return render_template("graph_coloring/index.html")

@@ -6,12 +6,7 @@ import {
   Check, 
   FileText, 
   Table, 
-  GitCommit, 
-  RotateCcw, 
   Loader2, 
-  Percent, 
-  Layers,
-  ArrowRight,
   Sparkles
 } from 'lucide-react';
 import { apiHuffmanEncode, apiHuffmanDecode } from '../api/client';

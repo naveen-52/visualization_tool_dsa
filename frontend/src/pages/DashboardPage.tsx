@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  BarChart3, 
   Network, 
   GitBranch, 
   Binary, 
@@ -10,7 +9,6 @@ import {
   Clock, 
   CheckCircle, 
   Play,
-  Share2,
   RefreshCw
 } from 'lucide-react';
 import { AppPage, DashboardStats, ActivityItem } from '../types';
