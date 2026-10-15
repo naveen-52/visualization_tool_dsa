@@ -5,3 +5,5 @@ matplotlib==3.8.2
 networkx==3.2.1
 waitress==3.0.2
 pillow==12.1.0
+gunicorn==21.2.0; sys_platform != 'win32'
+

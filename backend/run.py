@@ -205,15 +205,39 @@ def serve_react_assets(filename):
 
 
 
+application = app
+
+@app.route("/vite.svg")
+def serve_vite_icon():
+    dist_dir = os.path.join(app.root_path, "..", "frontend", "dist")
+    if os.path.exists(os.path.join(dist_dir, "vite.svg")):
+        return send_from_directory(dist_dir, "vite.svg")
+    return send_from_directory(os.path.join(app.root_path, "static"), "vite.svg", silent=True) or ("", 404)
+
+
 if __name__ == "__main__":
     is_dev = os.environ.get("FLASK_ENV") == "development" or "--dev" in sys.argv
+    port = int(os.environ.get("PORT", 5000))
+    host = os.environ.get("HOST", "127.0.0.1" if is_dev else "0.0.0.0")
+
     if is_dev:
-        print("Starting Flask Built-in Development Server (Debug Mode)...", flush=True)
-        app.run(debug=True, host="127.0.0.1", port=5000)
+        print(f"Starting Flask Built-in Development Server on http://{host}:{port} (Debug Mode)...", flush=True)
+        app.run(debug=True, host=host, port=port)
     else:
+        threads = int(os.environ.get("THREADS", 32))
+        connection_limit = int(os.environ.get("CONNECTION_LIMIT", 250))
+        channel_timeout = int(os.environ.get("CHANNEL_TIMEOUT", 30))
+
         if _has_waitress:
-            print("Starting Production WSGI Server (Waitress) on http://127.0.0.1:5000 ...", flush=True)
-            serve(app, host="127.0.0.1", port=5000, threads=8)
+            print(f"Starting Production WSGI Server (Waitress) on http://{host}:{port} with {threads} threads (max {connection_limit} connections)...", flush=True)
+            serve(
+                app,
+                host=host,
+                port=port,
+                threads=threads,
+                connection_limit=connection_limit,
+                channel_timeout=channel_timeout
+            )
         else:
-            print("Waitress not found. Starting Flask Built-in Server on http://127.0.0.1:5000 ...", flush=True)
-            app.run(host="127.0.0.1", port=5000)
+            print(f"Waitress not found. Starting Flask Built-in Server on http://{host}:{port} ...", flush=True)
+            app.run(host=host, port=port)

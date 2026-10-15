@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: nec-algoviz
+    runtime: python
+    buildCommand: "cd frontend && npm install && npm run build && cd ../backend && pip install -r requirements.txt"
+    startCommand: "cd backend && python run.py"
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: THREADS
+        value: 32
+      - key: CONNECTION_LIMIT
+        value: 250
