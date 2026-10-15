@@ -23,8 +23,8 @@ from app.routes.api_routes import api_bp
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_key")
 
-# Explicitly set cache duration (12 hours) regardless of debug mode
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 43200
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 # -- Flask-Mail Configuration (loaded from .env) --------------------------------
 app.config['MAIL_SERVER']   = os.environ.get('MAIL_SERVER',   'smtp.gmail.com')
