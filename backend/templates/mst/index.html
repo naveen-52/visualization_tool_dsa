@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}Minimum Spanning Tree - AlgoViz Pro{% endblock %}
+{% block title %}Minimum Spanning Tree — NEC AlgoViz{% endblock %}
 
 {% block breadcrumbs %}
 <span>Home</span>
@@ -12,14 +12,14 @@
 <div class="page-shell">
     <section class="page-hero">
         <div class="page-hero-content">
-            <div class="page-eyebrow"><i class="fas fa-network-wired"></i> Network optimization</div>
+            <div class="page-eyebrow"><i class="fas fa-network-wired"></i> Network Optimization</div>
             <h1 class="page-title">Minimum Spanning Tree</h1>
             <p class="page-subtitle">
                 Build a weighted graph and compute the optimal connection path using Prim's or Kruskal's algorithm in a refined, guided workspace.
             </p>
             <div class="page-actions">
-                <a href="#configure-card" class="btn btn-primary">Create MST flow</a>
-                <a href="/dashboard" class="btn btn-secondary">Back to dashboard</a>
+                <a href="#configure-card" class="btn btn-primary">Create MST Flow</a>
+                <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
             </div>
         </div>
         <div class="page-hero-visual">
@@ -55,7 +55,7 @@
 
     <section class="page-card" id="configure-card">
         <div class="page-card-header">
-            <div class="page-card-title">Configure graph</div>
+            <div class="page-card-title">Configure Graph</div>
             <div class="page-card-icon"><i class="fas fa-network-wired"></i></div>
         </div>
 
@@ -67,7 +67,7 @@
         <form action="/mst/matrix" method="POST">
             <div class="form-group" style="max-width: 320px; margin-bottom: 20px;">
                 <label class="form-label">Number of Vertices</label>
-                <input type="number" name="num_vertices" class="form-input" min="2" max="10" required placeholder="Enter number of vertices (2<=n<=50)">
+                <input type="number" name="num_vertices" class="form-input" min="2" max="50" required placeholder="Enter number of vertices (2 ≤ n ≤ 50)">
             </div>
 
             <div class="form-group" style="max-width: 320px; margin-bottom: 20px;">
@@ -111,7 +111,7 @@
                 animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             }
         </style>
-        <div class="page-card-title" style="margin-bottom: 12px;">How it works</div>
+        <div class="page-card-title" style="margin-bottom: 12px;">How It Works</div>
         <div class="card-description" style="color: var(--text-secondary); line-height: 1.7;">
             <p>Constructing a Minimum Spanning Tree transforms a weighted graph into an optimal, minimum-cost connection network. NEC AlgoViz guides you through this process with real-time visualizations that highlight key edge selections at each step.</p>
             

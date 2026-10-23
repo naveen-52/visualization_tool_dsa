@@ -25,7 +25,7 @@ export const Header: React.FC<HeaderProps> = ({
       case 'mst': return 'Minimum Spanning Tree Visualizer';
       case 'huffman': return 'Huffman Coding Studio';
       case 'about': return 'About NEC AlgoViz Platform';
-      default: return 'AlgoViz Pro';
+      default: return 'NEC AlgoViz Pro';
     }
   };
 

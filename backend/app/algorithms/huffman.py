@@ -158,18 +158,21 @@ def decode_huffman(encoded_text, codes):
     """
     if not encoded_text or not codes:
         return ""
-        
+
     # Invert the mapping: binary -> character
     reverse_codes = {v: k for k, v in codes.items()}
-    
+
+    # Strip whitespace/line breaks from bitstream
+    clean_encoded = "".join(c for c in encoded_text if c in ("0", "1"))
+
     decoded_text = ""
     current_bits = ""
-    
+
     # Reconstruct exactly the original string
-    for bit in encoded_text:
+    for bit in clean_encoded:
         current_bits += bit
         if current_bits in reverse_codes:
             decoded_text += reverse_codes[current_bits]
             current_bits = ""
-            
+
     return decoded_text

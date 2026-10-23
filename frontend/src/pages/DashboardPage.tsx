@@ -44,7 +44,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
       id: 'graph-coloring' as AppPage,
       title: 'Graph Coloring Engine',
       algo: 'Welsh-Powell Greedy',
-      description: 'Find minimal chromatic number, resolve adjacency conflicts, and experiment with vertex & edge coloring.',
+      description: 'Find the chromatic number, resolve adjacency conflicts, and experiment with vertex and edge coloring.',
       icon: Network,
       color: 'from-blue-600 to-indigo-600',
       shadow: 'shadow-blue-500/20',
@@ -88,7 +88,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
             Explore & Verify Discrete Algorithms
           </h2>
           <p className="text-sm text-slate-300 leading-relaxed">
-            Select an algorithm below to configure matrices, visualize topological structures, and step through mathematical proofs in real-time.
+            Select an algorithm below to configure matrices, visualize topological structures, and step through mathematical proofs in real time.
           </p>
         </div>
         <div className="absolute right-6 -bottom-6 w-64 h-64 bg-blue-500/10 rounded-full blur-2xl pointer-events-none"></div>

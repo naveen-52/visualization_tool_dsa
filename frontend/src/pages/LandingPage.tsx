@@ -152,7 +152,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           </h1>
 
           <p className="text-base md:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            A research and classroom-ready platform engineered for computer science students to visualize, experiment, and deeply understand complex graph theories and data compression.
+            A research and classroom-ready platform engineered for computer science students to visualize, experiment, and deeply understand complex graph theory and data compression.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
@@ -222,7 +222,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 <Zap className="w-6 h-6" />
               </div>
               <h4 className="text-lg font-bold text-white">Instant Python Computations</h4>
-              <p className="text-xs text-slate-400">High performance NetworkX mathematical graph engines.</p>
+              <p className="text-xs text-slate-400">High-performance NetworkX mathematical graph engines.</p>
             </div>
             <div className="space-y-1">
               <div className="flex items-center justify-center text-emerald-400 mb-2">

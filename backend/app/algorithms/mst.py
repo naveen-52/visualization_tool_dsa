@@ -14,11 +14,12 @@ def prims_mst(num_vertices, matrix):
 
     for i in range(num_vertices):
         for j in range(num_vertices):
-            if matrix[i][j] > 0:
+            if matrix[i][j] != 0:
                 adjacency[i].append((j, matrix[i][j]))
 
     # Min heap: (weight, current_node, parent)
-    min_heap = [(0, 0, -1)]
+    start_node = next((i for i in range(num_vertices) if adjacency[i]), 0)
+    min_heap = [(0, start_node, -1)]
 
     while min_heap and len(visited) < num_vertices:
 
@@ -87,7 +88,7 @@ def kruskal_mst(num_vertices, matrix):
     # Build edge list
     for i in range(num_vertices):
         for j in range(i + 1, num_vertices):
-            if matrix[i][j] > 0:
+            if matrix[i][j] != 0:
                 edges.append((matrix[i][j], i, j))
 
     edges.sort()

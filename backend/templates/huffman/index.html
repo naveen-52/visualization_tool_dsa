@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}Huffman Coding – AlgoViz Pro{% endblock %}
+{% block title %}Huffman Coding — NEC AlgoViz{% endblock %}
 
 {% block breadcrumbs %}
 <span>Home</span>
@@ -644,9 +644,9 @@ body.light-mode-preview {
             <p class="page-subtitle">
                 Huffman coding is a lossless data compression algorithm.
                 <br>
-                The idea is to assign variable-length codes to input characters, lengths of the codes are based on the frequencies of characters. The greedy idea is to assign the least length code to the most frequent character.
+                It assigns variable-length codes to input characters, where code lengths are determined by character frequencies. The greedy strategy assigns the shortest code to the most frequent character.
                 <br>
-                The variable-length codes assigned to input characters are Prefix Codes, means the codes (bit sequences) are assigned in such a way that the code assigned to one character is not the prefix of code assigned to any other character. This is how Huffman Coding makes sure that there is no ambiguity when decoding the generated bitstream.
+                These variable-length codes are prefix-free codes, meaning no character's code is a prefix of another character's code. This ensures unambiguous decoding of the generated bitstream.
             </p>
         </div>
         <div class="page-hero-visual">
@@ -822,22 +822,22 @@ body.light-mode-preview {
 
     <!-- ══ HOW IT WORKS ══════════════════════════════════ -->
     <section class="page-card">
-        <div class="page-card-title" style="margin-bottom: 12px;">How it works</div>
+        <div class="page-card-title" style="margin-bottom: 12px;">How It Works</div>
         <div class="card-description" style="color: var(--text-secondary); line-height: 1.7;">
             <p>
-                This algorithm builds a tree in bottom up manner using a priority queue (or heap). Input is an array of unique characters along with their frequency of occurrences and output is Huffman Tree. 
+                This algorithm builds a tree in a bottom-up manner using a priority queue (or heap). The input is an array of unique characters along with their frequencies of occurrence, and the output is a Huffman tree.
             </p>
             <p>
-                Create a leaf node for each unique character and build a min heap of all leaf nodes (Min Heap is used as a priority queue. The value of frequency field is used to compare two nodes in min heap. Initially, the least frequent character is at root)
+                Create a leaf node for each unique character and build a min-heap of all leaf nodes. (A min-heap is used as a priority queue. The frequency value is used to compare two nodes in the min-heap. Initially, the least frequent character is at the root.)
             </p>
             <p>
-                Extract two nodes with the minimum frequency from the min heap. 
+                Extract two nodes with the minimum frequencies from the min-heap.
             </p>
             <p>
-                Create a new internal node with a frequency equal to the sum of the two nodes frequencies. Make the first extracted node as its left child and the other extracted node as its right child. Add this node to the min heap.
+                Create a new internal node with a frequency equal to the sum of the two nodes' frequencies. Set the first extracted node as its left child and the other extracted node as its right child. Add this node to the min-heap.
             </p>
             <p>
-                Repeat steps#2 and #3 until the heap contains only one node. The remaining node is the root node and the tree is complete.
+                Repeat steps 2 and 3 until the heap contains only one node. The remaining node is the root node, and the tree is complete.
             </p>
             <!--<p><strong>Huffman Coding</strong> achieves efficient lossless data compression by building an optimal binary tree based on symbol frequencies. NEC AlgoViz transforms this encoding process into an interactive visual experience, helping you observe how binary codes are assigned without losing any original data.</p>
             <p style="margin-top: 10px;">The algorithm constructs the <strong>Huffman Tree</strong> through a greedy approach that repeatedly merges the two lowest-frequency nodes, placing rare characters deeper in the tree structure.</p>

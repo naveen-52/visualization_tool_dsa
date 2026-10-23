@@ -10,8 +10,4 @@ def validate_weight_matrix(matrix):
         for j in range(n):
             if matrix[i][j] != matrix[j][i]:
                 raise ValueError("Matrix must be symmetric.")
-
-    for i in range(n):
-        for j in range(n):
-            if matrix[i][j] < 0:
-                raise ValueError("Negative weights are not allowed.")
+

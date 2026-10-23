@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}Graph Coloring - AlgoViz Pro{% endblock %}
+{% block title %}Graph Coloring — NEC AlgoViz{% endblock %}
 
 {% block breadcrumbs %}
 <span>Home</span>
@@ -12,14 +12,14 @@
 <div class="page-shell">
     <section class="page-hero">
         <div class="page-hero-content">
-            <div class="page-eyebrow"><i class="fas fa-palette"></i> Interactive graph analysis</div>
+            <div class="page-eyebrow"><i class="fas fa-palette"></i> Interactive Graph Analysis</div>
             <h1 class="page-title">Graph Coloring</h1>
             <p class="page-subtitle">
                 Explore how the Welsh-Powell algorithm systematically colors graph vertices through interactive, real-time visualizations. Learn how adjacent nodes are assigned distinct colors without conflicts through intuitive, step-by-step visual execution.
             </p>
             <div class="page-actions">
-                <a href="#configure-card" class="btn btn-primary">Start coloring</a>
-                <a href="/dashboard" class="btn btn-secondary">Back to dashboard</a>
+                <a href="#configure-card" class="btn btn-primary">Start Coloring</a>
+                <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
             </div>
         </div>
         <div class="page-hero-visual">
@@ -55,7 +55,7 @@
 
     <section class="page-card" id="configure-card">
         <div class="page-card-header">
-            <div class="page-card-title">Configure your graph</div>
+            <div class="page-card-title">Configure Your Graph</div>
             <div class="page-card-icon"><i class="fas fa-palette"></i></div>
         </div>
 
@@ -73,9 +73,9 @@
                     name="num_vertices"
                     class="form-input"
                     min="2"
-                    max="120"
+                    max="50"
                     required
-                    placeholder="Enter the Vertices (2<=n<=50)">
+                    placeholder="Enter number of vertices (2 ≤ n ≤ 50)">
             </div>
 
             <div class="action-buttons" style="justify-content: flex-start;">
@@ -92,7 +92,7 @@
     </section>
 
     <section class="page-card">
-        <div class="page-card-title" style="margin-bottom: 12px;">How it works</div>
+        <div class="page-card-title" style="margin-bottom: 12px;">How It Works</div>
         <div class="card-description" style="color: var(--text-secondary); line-height: 1.7;">
             <p><strong>Graph Coloring</strong> is a fundamental problem in graph theory that ensures adjacent vertices connected by an edge never share the same color. NEC AlgoViz transforms this abstract concept into an interactive visual experience, helping you observe how colors are dynamically assigned across graph networks in real time.</p>
             <p style="margin-top: 10px;">Through the <strong>Welsh-Powell Algorithm</strong>, learners explore a systematic strategy that produces conflict-free colorings by prioritizing high-degree vertices. Understand the algorithm's decision-making process across three guided learning phases:</p>

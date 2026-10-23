@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}Enter Weighted Matrix - AlgoViz Pro{% endblock %}
+{% block title %}Enter Weighted Matrix — NEC AlgoViz{% endblock %}
 
 {% block breadcrumbs %}
 <span>Home</span>
@@ -155,7 +155,7 @@ border:1px solid #fecaca;
 <h1 class="page-title">Enter Weighted Adjacency Matrix</h1>
 
 <p class="page-subtitle">
-Edit any weight. Mirror cell updates automatically.
+Edit any weight; the mirrored cell updates automatically.
 </p>
 
 </div>
@@ -190,7 +190,7 @@ type="number"
 name="cell_{{ i }}_{{ j }}"
 id="cell_{{ i }}_{{ j }}"
 value="0"
-min="0"
+min="-999"
 {% if i == j %}readonly{% endif %}
 oninput="mirrorValue('{{ i }}','{{ j }}',this.value)"
 >

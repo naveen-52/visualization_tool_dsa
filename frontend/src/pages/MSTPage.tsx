@@ -6,7 +6,10 @@ import {
   SkipForward, 
   SkipBack, 
   RotateCcw, 
-  Loader2
+  Loader2,
+  ZoomIn,
+  ZoomOut,
+  Maximize2
 } from 'lucide-react';
 import { apiRunMST } from '../api/client';
 import { MSTRunResponse, MSTStep } from '../types';
@@ -22,6 +25,7 @@ export const MSTPage: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1200); // ms
   const [loading, setLoading] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1.0);
 
   const timerRef = useRef<any>(null);
 
@@ -114,7 +118,7 @@ export const MSTPage: React.FC = () => {
     result?.steps && result.steps[currentStepIdx] ? result.steps[currentStepIdx] : null;
 
   const getNodeLabel = (i: number) => {
-    return numVertices <= 26 ? String.fromCharCode(65 + i) : (i + 1).toString();
+    return i.toString();
   };
 
   return (
@@ -173,7 +177,7 @@ export const MSTPage: React.FC = () => {
         <div className="lg:col-span-5 space-y-6">
           <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-5 shadow-xl">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-white">Vertices Count (V)</span>
+              <span className="text-sm font-bold text-white">Vertex Count (V)</span>
               <div className="flex items-center gap-2">
                 <input
                   type="range"
@@ -290,13 +294,54 @@ export const MSTPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Graph Image Display */}
-              <div className="flex items-center justify-center p-4 bg-white rounded-2xl shadow-inner min-h-[360px]">
-                <img
-                  src={activeStep.image_url}
-                  alt={`MST Step ${currentStepIdx + 1}`}
-                  className="max-h-[380px] object-contain rounded-lg"
-                />
+              {/* Graph Image Display & Interactive Zoom Controls */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between px-2 text-xs text-slate-400">
+                  <span className="font-semibold text-slate-300">Graph Visualization Canvas</span>
+                  <div className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 rounded-lg p-1">
+                    <button
+                      onClick={() => setZoomLevel((z) => Math.max(0.5, parseFloat((z - 0.15).toFixed(2))))}
+                      className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                      title="Zoom Out"
+                    >
+                      <ZoomOut className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setZoomLevel(1.0)}
+                      className="px-2 py-0.5 rounded text-[11px] font-mono hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+                      title="Reset Zoom (100%)"
+                    >
+                      {Math.round(zoomLevel * 100)}%
+                    </button>
+                    <button
+                      onClick={() => setZoomLevel((z) => Math.min(2.5, parseFloat((z + 0.15).toFixed(2))))}
+                      className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                      title="Zoom In"
+                    >
+                      <ZoomIn className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setZoomLevel((z) => (z === 1.0 ? 1.4 : 1.0))}
+                      className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                      title={zoomLevel === 1.0 ? "Fit / Expand" : "Reset"}
+                    >
+                      <Maximize2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="relative overflow-auto max-h-[540px] min-h-[380px] p-4 bg-white rounded-2xl shadow-inner flex items-center justify-center border border-slate-700/30">
+                  <img
+                    src={activeStep.image_url}
+                    alt={`MST Step ${currentStepIdx + 1}`}
+                    style={{
+                      transform: `scale(${zoomLevel})`,
+                      transformOrigin: 'center center',
+                      transition: 'transform 0.15s ease-out'
+                    }}
+                    className="max-h-[500px] w-auto object-contain rounded-lg select-none"
+                  />
+                </div>
               </div>
 
               {/* Playback Controls Bar */}
@@ -386,7 +431,7 @@ export const MSTPage: React.FC = () => {
               </div>
               <h4 className="text-base font-bold text-white">MST Animation Ready</h4>
               <p className="text-xs text-slate-400 max-w-sm">
-                Enter weights between vertices in the matrix and hit "Execute MST" to inspect the step-by-step tree assembly.
+                Enter weights between vertices in the matrix and click "Execute MST" to inspect the step-by-step tree assembly.
               </p>
             </div>
           )}

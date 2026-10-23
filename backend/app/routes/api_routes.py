@@ -19,6 +19,7 @@ from app.algorithms.graph_coloring import (
     count_min_colorings
 )
 from app.algorithms.mst import prims_mst, kruskal_mst
+from app.routes.mst_routes import get_optimal_mst_layout, compute_smart_edge_label_positions, draw_mst_figure
 from app.services.huffman_service import process_encode, process_decode
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
@@ -454,69 +455,15 @@ def _build_mst_graph(matrix):
     return G
 
 
-def _draw_mst_step(G, step, num_vertices):
-    mst_edges = step.get("edges", [])
-    current_node = step.get("current", None)
-
-    if len(G.nodes()) <= 6:
-        pos = nx.circular_layout(G)
-    else:
-        pos = nx.spring_layout(G, seed=42)
-
-    # Center graph
-    x_vals = [v[0] for v in pos.values()]
-    y_vals = [v[1] for v in pos.values()]
-    x_center = (max(x_vals) + min(x_vals)) / 2
-    y_center = (max(y_vals) + min(y_vals)) / 2
-    pos = {k: (v[0] - x_center, v[1] - y_center) for k, v in pos.items()}
-
-    with _render_lock:
-        plt.figure(figsize=(6, 6), facecolor="#ffffff")
-        plt.margins(0.2)
-        plt.axis("off")
-
-        mst_set = set((min(u, v), max(u, v)) for u, v, _ in mst_edges)
-        mst_edge_list = []
-        non_mst_edges = []
-
-        for u, v in G.edges():
-            if (min(u, v), max(u, v)) in mst_set:
-                mst_edge_list.append((u, v))
-            else:
-                non_mst_edges.append((u, v))
-
-        node_colors = []
-        for node in G.nodes():
-            if node == current_node:
-                node_colors.append("#ef4444")
-            else:
-                node_colors.append("#93c5fd")
-
-        nx.draw_networkx_nodes(G, pos, node_color=node_colors, node_size=800, edgecolors="#1e293b", linewidths=1.5)
-
-        nx.draw_networkx_edges(G, pos, edgelist=non_mst_edges, edge_color="#cbd5e1", width=1.5, alpha=0.6)
-        nx.draw_networkx_edges(G, pos, edgelist=mst_edge_list, edge_color="#16a34a", width=3.5)
-
-        labels = {i: chr(65 + i) if num_vertices <= 26 else str(i) for i in range(num_vertices)}
-        nx.draw_networkx_labels(G, pos, labels=labels, font_size=10, font_weight="bold", font_color="#0f172a")
-
-        mst_labels = {(u, v): w for u, v, w in mst_edges}
-        non_mst_labels = {(u, v): G[u][v]["weight"] for u, v in non_mst_edges if G.has_edge(u, v)}
-
-        nx.draw_networkx_edge_labels(
-            G, pos, edge_labels=non_mst_labels, font_size=8, font_color="#64748b",
-            bbox=dict(facecolor="white", edgecolor="none", alpha=0.7)
-        )
-        nx.draw_networkx_edge_labels(
-            G, pos, edge_labels=mst_labels, font_size=9, font_weight="bold", font_color="#15803d",
-            bbox=dict(facecolor="#dcfce7", edgecolor="#86efac", alpha=0.9)
-        )
-
-        buf = io.BytesIO()
-        plt.savefig(buf, format="png", bbox_inches="tight", dpi=110)
-        plt.close()
-        buf.seek(0)
-        return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
+def _draw_mst_step(G, step, num_vertices, pos=None, label_positions=None):
+    return draw_mst_figure(
+        G,
+        step,
+        num_vertices=num_vertices,
+        pos=pos,
+        label_positions=label_positions,
+        as_data_url=True
+    )
 
 
 @api_bp.route("/mst/run", methods=["POST"])
@@ -544,9 +491,16 @@ def api_mst_run():
         else:
             mst_edges, total_weight, raw_steps = prims_mst(num_vertices, matrix)
 
+        pos = get_optimal_mst_layout(G)
+        mst_set = set((min(u, v), max(u, v)) for u, v, _ in mst_edges)
+        all_edges_ordered = [(u, v) for u, v, _ in mst_edges] + [
+            (u, v) for u, v in G.edges() if (min(u, v), max(u, v)) not in mst_set
+        ]
+        smart_label_positions = compute_smart_edge_label_positions(G, pos, all_edges_ordered)
+
         steps = []
         for i, step in enumerate(raw_steps):
-            img_url = _draw_mst_step(G, step, num_vertices)
+            img_url = _draw_mst_step(G, step, num_vertices, pos=pos, label_positions=smart_label_positions)
             steps.append({
                 "step_index": i + 1,
                 "current": step.get("current"),

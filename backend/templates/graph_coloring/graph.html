@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}Graph Visualization - AlgoViz Pro{% endblock %}
+{% block title %}Graph Visualization — NEC AlgoViz{% endblock %}
 
 {% block breadcrumbs %}
 <span>Home</span>
@@ -195,7 +195,7 @@ body.light-mode-preview .edge { stroke: #302f2f !important; }
                         <input type="hidden" name="cell_{{ i }}_{{ j }}" value="{{ matrix[i][j] }}">
                     {% endfor %}
                 {% endfor %}
-                <button class="btn btn-primary">Find Chromatic</button>
+                <button type="submit" class="btn btn-primary">Find Chromatic Number</button>
             </form>
 
             <!-- Manual Coloring -->
@@ -203,7 +203,7 @@ body.light-mode-preview .edge { stroke: #302f2f !important; }
         </div>
 
         <a href="/graph-coloring" class="btn btn-secondary">
-            ← Back
+            <i class="fas fa-arrow-left"></i> Back
         </a>
     </div>
 </div>

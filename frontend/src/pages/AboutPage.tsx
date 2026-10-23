@@ -55,7 +55,7 @@ export const AboutPage: React.FC = () => {
           </div>
           <h3 className="text-base font-bold text-white">Production Stack</h3>
           <p className="text-xs text-slate-400 leading-relaxed">
-            Engineered with a high performance Python / NetworkX computational backend coupled with a modern React + Tailwind SPA.
+            Engineered with a high-performance Python / NetworkX computational backend coupled with a modern React + Tailwind SPA.
           </p>
         </div>
       </div>
@@ -74,9 +74,9 @@ export const AboutPage: React.FC = () => {
               <span>Welsh-Powell Vertex Coloring</span>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Greedy coloring heuristic based on descending degree ordering. Computes the upper bound for the chromatic number $\chi(G)$ and identifies non-adjacent vertex clusters.
+              Greedy coloring heuristic based on descending degree ordering. Computes the upper bound for the chromatic number χ(G) and identifies non-adjacent vertex clusters.
             </p>
-            <div className="text-[11px] text-slate-500">Complexity: $O(V^2 + E)$</div>
+            <div className="text-[11px] text-slate-500">Complexity: O(V² + E)</div>
           </div>
 
           <div className="p-5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-3">
@@ -85,9 +85,9 @@ export const AboutPage: React.FC = () => {
               <span>Prim's & Kruskal's MST</span>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Greedy algorithms that find minimum spanning trees in connected, weighted graphs. Connects all vertices with minimum cumulative edge weights without forming cycles.
+              Greedy algorithms that find minimum spanning trees in connected, weighted graphs. Connects all vertices with minimum cumulative edge weight without forming cycles.
             </p>
-            <div className="text-[11px] text-slate-500">Complexity: $O(E \log V)$</div>
+            <div className="text-[11px] text-slate-500">Complexity: O(E log V)</div>
           </div>
 
           <div className="p-5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-3">
@@ -98,7 +98,7 @@ export const AboutPage: React.FC = () => {
             <p className="text-xs text-slate-300 leading-relaxed">
               Entropy encoding algorithm for lossless data compression. Generates variable-length prefix-free codes assigned according to individual character frequency distributions.
             </p>
-            <div className="text-[11px] text-slate-500">Complexity: $O(N \log N)$</div>
+            <div className="text-[11px] text-slate-500">Complexity: O(N log N)</div>
           </div>
         </div>
       </div>

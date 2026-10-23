@@ -68,12 +68,7 @@ def graph_coloring_visualize():
         [int(request.form[f"cell_{i}_{j}"]) for j in range(num_vertices)]
         for i in range(num_vertices)
     ]
-
     G = build_graph_from_matrix(matrix)
-
-    # ✅ FIX: no fake edges
-    if G.number_of_edges() == 0:
-        return "Graph must have at least one edge", 400
 
     # ✅ SMART LABEL LOGIC
     if num_vertices <= 26:
@@ -85,11 +80,12 @@ def graph_coloring_visualize():
 
     # ✅ BETTER LAYOUT
     if num_vertices <= 50:
-     pos = nx.spring_layout(G, seed=42, iterations=50)
+        pos = nx.spring_layout(G, seed=42, iterations=50)
     elif num_vertices <= 150:
-     pos = nx.circular_layout(G)
+        pos = nx.circular_layout(G)
     else:
-     pos = nx.random_layout(G)
+        pos = nx.random_layout(G)
+
     # ✅ BIGGER CANVAS
     plt.figure(figsize=(10,10))
 
@@ -102,13 +98,14 @@ def graph_coloring_visualize():
     )
 
     # -------- DRAW EDGES (FADED) --------
-    nx.draw_networkx_edges(
-    G,
-    pos,
-    edge_color="#000000",
-    width=1.5,
-    alpha=0.9
-)
+    if G.number_of_edges() > 0:
+        nx.draw_networkx_edges(
+            G,
+            pos,
+            edge_color="#000000",
+            width=1.5,
+            alpha=0.9
+        )
 
     # -------- DRAW LABELS (ONLY IF SMALL) --------
     if labels is not None and num_vertices <= 40:
@@ -214,13 +211,14 @@ def graph_coloring_chromatic():
             linewidths=1.5
         )
 
-        nx.draw_networkx_edges(
-    G,
-    pos,
-    edge_color="#000000",   # 🔥 black
-    width=1.2,              # thicker
-    alpha=0.9               # visible
-)
+        if G.number_of_edges() > 0:
+            nx.draw_networkx_edges(
+                G,
+                pos,
+                edge_color="#000000",   # 🔥 black
+                width=1.2,              # thicker
+                alpha=0.9               # visible
+            )
 
         if labels is not None and num_vertices <= 80:
             nx.draw_networkx_labels(
@@ -267,6 +265,9 @@ def graph_coloring_chromatic():
 
         if len(graphs) >= max_colorings:
             break
+
+    if not graphs:
+        graphs.append(draw_vertex_graph(base_coloring))
 
     edge_coloring = greedy_edge_coloring(G)
     chromatic_index = max(edge_coloring.values()) + 1 if edge_coloring else 0
@@ -319,14 +320,15 @@ def graph_coloring_chromatic():
     # 🔥 EDGE IMPROVEMENT
     edge_width = 1.2 if num_vertices > 50 else 2.5
 
-    nx.draw_networkx_edges(
-    G,
-    pos,
-    edge_color=edge_colors,
-    width=2.5,              # stronger
-    alpha=1.0,              # no fade
-    connectionstyle="arc3,rad=0.05"
-)
+    if G.number_of_edges() > 0:
+        nx.draw_networkx_edges(
+            G,
+            pos,
+            edge_color=edge_colors,
+            width=2.5,              # stronger
+            alpha=1.0,              # no fade
+            connectionstyle="arc3,rad=0.05"
+        )
 
     buf = io.BytesIO()
     plt.savefig(buf, format="png", bbox_inches="tight")

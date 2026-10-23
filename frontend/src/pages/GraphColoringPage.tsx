@@ -256,7 +256,7 @@ export const GraphColoringPage: React.FC = () => {
         <div className="lg:col-span-5 space-y-6">
           <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-5 shadow-xl">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-white">Vertices Count (V)</span>
+              <span className="text-sm font-bold text-white">Vertex Count (V)</span>
               <div className="flex items-center gap-2">
                 <input
                   type="range"
@@ -278,7 +278,7 @@ export const GraphColoringPage: React.FC = () => {
                 <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
                   Adjacency Matrix (Click to toggle edge)
                 </span>
-                <span className="text-[11px] text-slate-500">Symmetric $A = A^T$</span>
+                <span className="text-[11px] text-slate-500">Symmetric (A = Aᵀ)</span>
               </div>
 
               <div className="overflow-x-auto p-2 bg-slate-950/80 rounded-xl border border-slate-800">
@@ -407,7 +407,7 @@ export const GraphColoringPage: React.FC = () => {
                     <div className="flex items-center justify-between p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
                       <div>
                         <span className="text-xs text-blue-300 uppercase tracking-wider font-semibold">
-                          Chromatic Number $\chi(G)$
+                          Chromatic Number χ(G)
                         </span>
                         <div className="text-2xl font-black text-white">
                           {vertexResult.chromatic_number} Colors Required
@@ -439,7 +439,7 @@ export const GraphColoringPage: React.FC = () => {
                     <div className="flex items-center justify-between p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
                       <div>
                         <span className="text-xs text-indigo-300 uppercase tracking-wider font-semibold">
-                          Chromatic Index $\chi'(G)$
+                          Chromatic Index χ′(G)
                         </span>
                         <div className="text-2xl font-black text-white">
                           {edgeResult.chromatic_index} Colors for Edges
@@ -472,7 +472,7 @@ export const GraphColoringPage: React.FC = () => {
               {activeTab === 'all' && (
                 <div className="space-y-4">
                   <div className="text-xs text-slate-400">
-                    Displaying distinct minimal coloring permutations calculated using randomized heuristics:
+                    Displaying distinct valid colorings calculated using randomized heuristics:
                   </div>
 
                   {allCombinations?.combinations && allCombinations.combinations.length > 0 ? (
@@ -578,7 +578,7 @@ export const GraphColoringPage: React.FC = () => {
                       disabled={loading || Object.keys(manualColors).length === 0}
                       className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-md shadow-emerald-600/20 disabled:opacity-50 transition-all"
                     >
-                      Validate Coloring Conflicts
+                      Validate Coloring for Conflicts
                     </button>
                     <button
                       onClick={() => {

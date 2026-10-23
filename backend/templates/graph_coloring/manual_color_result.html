@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}Manual Coloring Results - AlgoViz Pro{% endblock %}
+{% block title %}Manual Coloring Results — NEC AlgoViz{% endblock %}
 
 {% block breadcrumbs %}
 <span>Home</span>
@@ -139,7 +139,7 @@ Invalid Coloring
 
 <div class="graph-frame">
 
-<img src="data:image/png;base64,{{ graph }}">
+<img src="data:image/png;base64,{{ graph }}" alt="Colored graph visualization">
 
 </div>
 
@@ -154,7 +154,7 @@ Invalid Coloring
 
         <!-- BACK TO GRAPH -->
         <a href="/graph-coloring/graph" class="btn btn-secondary">
-            ← Back to Graph
+            <i class="fas fa-arrow-left"></i> Back to Graph
         </a>
 
         <!-- TRY NEW GRAPH -->

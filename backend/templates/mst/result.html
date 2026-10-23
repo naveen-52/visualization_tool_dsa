@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}MST Results - AlgoViz Pro{% endblock %}
+{% block title %}Minimum Spanning Tree Results — NEC AlgoViz{% endblock %}
 
 {% block breadcrumbs %}
 <span>Home</span>
@@ -73,13 +73,17 @@
     margin-bottom: 24px;
 }
 
-/* GRAPH */
 .graph-wrapper {
     text-align: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px 0;
 }
 .graph-wrapper img {
     max-width: 100%;
-    max-height: 480px;
+    max-height: 520px;
+    height: auto;
+    object-fit: contain;
     border-radius: 14px;
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-md);
@@ -179,7 +183,7 @@
 <div class="page-header">
     <h1 class="page-title">Minimum Spanning Tree Results</h1>
     <p class="page-subtitle">
-        Computed using <strong>{{ algorithm|capitalize }}</strong> Algorithm.
+        Computed using <strong>{{ algorithm|capitalize }}'s</strong> Algorithm.
     </p>
 </div>
 
@@ -191,12 +195,21 @@
         <strong>{{ total_weight }}</strong>
     </div>
 
+    {% if is_connected %}
     <div class="alert-modern">
         <i class="fas fa-check-circle"></i>
         <span>
             MST edges are highlighted in green. All vertices are connected with minimum total cost.
         </span>
     </div>
+    {% else %}
+    <div class="alert-modern" style="background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.4); color: #dc2626;">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>
+            <strong>Notice: Disconnected Graph</strong> — The graph is not fully connected. The result is a Minimum Spanning Forest ({{ mst_edges|length }} edges found for {{ num_vertices }} vertices), not a single spanning tree.
+        </span>
+    </div>
+    {% endif %}
 
     <!-- STATIC GRAPH -->
     <div class="graph-wrapper">
@@ -220,9 +233,9 @@
 </div>
 
     <div style="text-align:center; margin-top:15px;">
-        <button class="btn btn-secondary" onclick="prevStep()">⬅ Prev</button>
-        <button class="btn btn-primary" onclick="playAnimation()">▶ Play</button>
-        <button class="btn btn-secondary" onclick="nextStep()">Next ➡</button>
+        <button class="btn btn-secondary" onclick="prevStep()"><i class="fas fa-chevron-left"></i> Previous</button>
+        <button class="btn btn-primary" onclick="playAnimation()"><i class="fas fa-play"></i> Play</button>
+        <button class="btn btn-secondary" onclick="nextStep()">Next <i class="fas fa-chevron-right"></i></button>
     </div>
 
 </div>
@@ -252,8 +265,8 @@
                 <tbody>
                     {% for edge in mst_edges %}
                     <tr>
-                        <td>{{ chr(65 + edge[0]) }}</td>
-                        <td>{{ chr(65 + edge[1]) }}</td>
+                        <td>{{ edge[0] }}{% if edge[0] < 26 %} <span style="color: var(--text-secondary); font-size: 11px;">({{ chr(65 + edge[0]) }})</span>{% endif %}</td>
+                        <td>{{ edge[1] }}{% if edge[1] < 26 %} <span style="color: var(--text-secondary); font-size: 11px;">({{ chr(65 + edge[1]) }})</span>{% endif %}</td>
                         <td>{{ edge[2] }}</td>
                     </tr>
                     {% endfor %}
@@ -341,7 +354,7 @@ function playAnimation() {
         } else {
             clearInterval(interval);
             overlay.classList.remove("flow-active");
-            alert("Animation completed");
+            alert("Animation completed.");
         }
     }, 1000);
 }
